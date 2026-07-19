@@ -1,10 +1,10 @@
 # Speech-to-text accuracy benchmark
 
 An independent word-error-rate benchmark of the major speech-to-text engines, commercial
-and open, run on the same audio with the same scorer and 95% confidence intervals. It
-covers eighteen cloud APIs and the open and on-device models, across four datasets that
-range from clean read speech to hard conference-call audio, and adds cost and latency next
-to accuracy so the numbers can be compared on more than one axis.
+and open, run on the same audio with the same scorer. It covers eighteen cloud APIs plus
+the open and on-device models, across four datasets from clean read speech to hard
+conference-call audio. Every number carries a 95% confidence interval, with cost and
+latency reported next to accuracy.
 
 Every number here is reproducible with the scripts in this repo, and the raw per-utterance
 transcripts our runs produced are committed under `results/transcripts/`, so anyone can
@@ -19,7 +19,7 @@ Two writeups build on this data:
 
 It started as a reproduction of one on-device benchmark and grew from there. That origin,
 Apple SpeechAnalyzer versus Whisper on LibriSpeech, is still here in full under
-[Where this started](#where-this-started-the-on-device-reproduction); it is now one dataset
+[On-device results](#on-device-results-apple-vs-whisper-vs-parakeet); it is now one dataset
 and a handful of engines inside a much larger comparison.
 
 ## What's in here
@@ -28,8 +28,8 @@ and a handful of engines inside a much larger comparison.
   Azure, Amazon, ElevenLabs, Speechmatics, Gladia, Soniox, Rev, Groq, xAI Grok, Fish,
   Cartesia, Inworld, Lemonfox, and Gemini), plus the open and on-device engines (the
   Whisper family through WhisperKit, NVIDIA Parakeet v2 and v3, and Apple SpeechAnalyzer).
-  A nineteenth adapter, Resemble, exists in the code but was dropped from the results on
-  cost.
+  A nineteenth adapter, Resemble, exists in the code but was dropped from the results
+  because running the full sets on it cost far more per hour than any other engine.
 - **Datasets.** LibriSpeech test-clean (clean read speech), Earnings-22 and SPGISpeech
   (two kinds of financial earnings-call audio), and AMI (meeting audio). Every engine gets
   the same files.
@@ -42,24 +42,47 @@ and a handful of engines inside a much larger comparison.
 - **Reproducible transcripts.** Every engine's output is committed gzipped under
   `results/transcripts/`, so the scoring can be re-run offline.
 
-Accuracy depends on the set, and no single engine wins all of them: the engine tied for the
-lowest error on clean read speech is the worst finished engine on hard earnings-call audio,
-and the engine that wins the hard set is only mid-pack on the clean one. The two blog posts
-above carry the full tables; this repo is the code and data behind them.
+Accuracy depends on the set, and no single engine wins all of them.
+
+## Results at a glance
+
+A slice of the cloud results, ordered by clean-speech error, showing how the ranking
+scrambles on hard audio. Numbers are WER percent (lower is better); the full tables for all
+eighteen cloud engines, plus cost and latency, are in the
+[accuracy writeup](https://verli.app/blog/speech-to-text-accuracy-benchmark).
+
+| Cloud engine | Clean WER (LibriSpeech) | Hard WER (Earnings-22) |
+|--------------|-----------------------:|-----------------------:|
+| OpenAI gpt-4o-transcribe  | 1.47 | 18.55 |
+| AssemblyAI Universal-3.5  | 1.55 | 10.43 |
+| Inworld STT-1             | 1.71 | 10.29 |
+| Fish Audio                | 1.73 | 10.27 |
+| xAI Grok                  | 1.82 | 9.53  |
+| ElevenLabs Scribe         | 1.99 | 15.44 |
+| Deepgram Nova-3           | 2.50 | 16.13 |
+
+OpenAI has the lowest clean-speech error and the highest hard-audio error of any engine that
+finished. xAI Grok wins the hard set from the middle of the clean one. The on-device
+results, with confidence intervals and the fairness caveats, are further down.
 
 ## Repository layout
 
 All Python lives in `src/` and is run from the repo root (`./.venv/bin/python src/<script>.py`).
 
-- `src/` — cloud adapters, the on-device runners, scoring, the paired bootstrap, cost and
+- `src/`: cloud adapters, the on-device runners, scoring, the paired bootstrap, cost and
   latency, and dataset prep.
-- `results/` — committed outputs: per-engine transcripts under `transcripts/`, plus the
-  WER, cost, and latency summaries (`results_*.json`, `report_*.json`, `latency.json`). The
-  large per-clip `reports/` tree is regenerable and gitignored.
-- `SpeechAnalyzerCLI/` — the macOS 26 Swift harness for Apple SpeechAnalyzer.
-- `assets/` — the on-device charts.
+- `results/`: the committed outputs. Per-engine transcripts under `transcripts/`, the WER,
+  cost, and latency summaries (`results_*.json`, `report_*.json`, `latency.json`), and the
+  on-device run summaries (`apple.json`, `parakeet.json`, `whisperkit.json`). The large
+  per-clip `reports/` tree is regenerable and gitignored.
+- `SpeechAnalyzerCLI/`: the macOS 26 Swift harness for Apple SpeechAnalyzer.
+- `assets/`: the on-device charts.
 - `pricing.json`, `requirements*.txt`, `setup.sh`, and `.env.providers.example` sit at the
   root.
+
+Running the benchmark also creates gitignored working directories a fresh clone will not
+have: `.venv/`, the datasets (`data/`, `data_<config>/`), and the WhisperKit model
+(`WhisperKit/`).
 
 ## The cloud APIs
 
@@ -69,8 +92,9 @@ Each provider is one adapter in `cloud_adapters.py`, pinned to a flagship model
 same `score_ood.py`. So a cloud API's WER is directly comparable to an open model's.
 
 ```bash
-./.venv/bin/pip install -r requirements-cloud.txt   # only AWS + Google need SDKs
-./.venv/bin/python src/prep_librispeech.py              # LibriSpeech test-clean into the OOD format
+./setup.sh                                          # one time: creates .venv and base deps
+./.venv/bin/pip install -r requirements-cloud.txt   # extra SDKs, only AWS + Google need them
+./.venv/bin/python src/prep_librispeech.py          # LibriSpeech test-clean into the shared format
 
 cp .env.providers.example .env.providers            # then fill in keys (gitignored)
 
@@ -79,6 +103,12 @@ cp .env.providers.example .env.providers            # then fill in keys (gitigno
 ./.venv/bin/python src/run_cloud_engines.py earnings22
 ./.venv/bin/python src/score_ood.py librispeech
 ./.venv/bin/python src/score_ood.py earnings22
+
+# SPGISpeech is the same prep/run/score with `spgispeech` (we sample 1200 clips). It is
+# license-gated, so accept the dataset terms on Hugging Face and set HF_TOKEN first.
+./.venv/bin/python src/prep_ood_dataset.py spgispeech --limit 1200
+./.venv/bin/python src/run_cloud_engines.py spgispeech
+./.venv/bin/python src/score_ood.py spgispeech
 
 # cost + latency
 ./.venv/bin/python src/report.py earnings22             # merges WER with pricing.json into $/hr
@@ -100,7 +130,7 @@ Failures are counted, not hidden. `score_ood.py` scores each engine only on the 
 returned and reports coverage, so an engine that refuses a file shows up as a coverage gap
 rather than a silent accuracy hit.
 
-## Where this started: the on-device reproduction
+## On-device results: Apple vs Whisper vs Parakeet
 
 The repo began as an independent reproduction of Inscribe's benchmark
 ["Apple's New Speech API vs Whisper"](https://get-inscribe.com/blog/apple-speech-api-benchmark.html)
@@ -112,7 +142,7 @@ SpeechAnalyzer through a small macOS 26 Swift harness. It adds the engine the or
 out (NVIDIA Parakeet), puts 95% confidence intervals on every number, and extends the test
 to two out-of-domain sets (Earnings-22 and AMI).
 
-### TL;DR
+### TL;DR (on-device)
 
 Numbers are WER (word error rate): the share of words the engine got wrong, so lower is
 better. "pp" means percentage points.
@@ -132,11 +162,6 @@ better. "pp" means percentage points.
   is the only set no engine trained on, so it is the fairest test. And Whisper's AMI
   numbers are a decoding artifact of running it clip-by-clip on very short segments, not
   its real accuracy (see "The AMI Whisper numbers").
-
-Every WER below is corpus WER (total word errors / total reference words) with a 95%
-bootstrap confidence interval. When a ranking is close, overlapping intervals are a weak
-signal, so we also run a paired bootstrap (`paired_test.py`): it compares two engines on
-the same clips and is the right test for "is A really better than B."
 
 ### LibriSpeech test-clean (2620 utterances, our independent runs)
 
