@@ -1,0 +1,6 @@
+# Extra deps for the 12-provider cloud benchmark (run_cloud_engines.py).
+# REST providers (deepgram, assemblyai, soniox, speechmatics, gladia, elevenlabs,
+# openai, groq, rev, azure) need only `requests`, already in requirements.txt.
+# The two SDK-only providers:
+amazon-transcribe>=0.6.2      # Amazon Transcribe streaming (per-clip)
+google-cloud-speech>=2.27.0   # Google Cloud Speech-to-Text V2 (recognize)

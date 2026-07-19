@@ -1,0 +1,16 @@
+.venv/
+# secrets: provider API keys and cloud creds. Never commit these.
+.env.providers
+*.json.gz.key
+gcp-service-account*.json
+data/
+data_*/
+WhisperKit/
+# per-utterance engine reports are large and re-generatable; the packed
+# transcripts under results/transcripts/ and the results_*.json summaries are
+# committed instead, so those are deliberately NOT ignored.
+results/reports/
+__pycache__/
+*.pyc
+.DS_Store
+SpeechAnalyzerCLI/.build/

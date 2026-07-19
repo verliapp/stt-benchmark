@@ -1,0 +1,66 @@
+{
+  "config": "ami",
+  "utterances": 12542,
+  "results": [
+    {
+      "engine": "parakeet-v3",
+      "werPercent": 11.43,
+      "ci95": [
+        11.08,
+        11.79
+      ],
+      "missing": 0,
+      "utterances": 12542,
+      "refWords": 89490,
+      "wallSeconds": 1110
+    },
+    {
+      "engine": "parakeet-v2",
+      "werPercent": 11.58,
+      "ci95": [
+        11.23,
+        11.93
+      ],
+      "missing": 0,
+      "utterances": 12542,
+      "refWords": 89490,
+      "wallSeconds": 1045
+    },
+    {
+      "engine": "apple-speechanalyzer",
+      "werPercent": 14.32,
+      "ci95": [
+        13.96,
+        14.69
+      ],
+      "missing": 0,
+      "utterances": 12542,
+      "refWords": 89490,
+      "wallSeconds": 868
+    },
+    {
+      "engine": "whisper-large-v3-v20240930",
+      "werPercent": 21.68,
+      "ci95": [
+        21.22,
+        22.15
+      ],
+      "missing": 0,
+      "utterances": 12542,
+      "refWords": 89490,
+      "wallSeconds": null
+    },
+    {
+      "engine": "whisper-small",
+      "werPercent": 22.88,
+      "ci95": [
+        22.4,
+        23.35
+      ],
+      "missing": 0,
+      "utterances": 12542,
+      "refWords": 89490,
+      "wallSeconds": null
+    }
+  ]
+}

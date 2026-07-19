@@ -1,0 +1,14 @@
+{
+  "engine": "apple-speechanalyzer",
+  "split": "test-clean",
+  "werPercent": 1.82,
+  "ci95": [
+    1.66,
+    1.99
+  ],
+  "missing": 0,
+  "utterances": 2620,
+  "audioSeconds": 19452,
+  "wallSeconds": 381,
+  "realTimeFactor": 0.0196
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "engine": "parakeet-tdt-0.6b-v2",
+    "split": "test-clean",
+    "werPercent": 1.69,
+    "ci95": [
+      1.54,
+      1.84
+    ],
+    "audioSeconds": 19452,
+    "computeSeconds": 374,
+    "realTimeFactor": 0.0192
+  },
+  {
+    "engine": "parakeet-tdt-0.6b-v3",
+    "split": "test-clean",
+    "werPercent": 2.15,
+    "ci95": [
+      1.92,
+      2.4
+    ],
+    "audioSeconds": 19452,
+    "computeSeconds": 406,
+    "realTimeFactor": 0.0209
+  }
+]

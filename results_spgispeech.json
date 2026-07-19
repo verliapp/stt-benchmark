@@ -1,0 +1,272 @@
+{
+  "config": "spgispeech",
+  "utterances": 1200,
+  "results": [
+    {
+      "engine": "assemblyai-universal",
+      "werPercent": 1.87,
+      "ci95": [
+        1.67,
+        2.07
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 610
+    },
+    {
+      "engine": "parakeet-v2",
+      "werPercent": 2.04,
+      "ci95": [
+        1.84,
+        2.22
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 176
+    },
+    {
+      "engine": "google-chirp",
+      "werPercent": 2.26,
+      "ci95": [
+        2.07,
+        2.46
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 0
+    },
+    {
+      "engine": "azure",
+      "werPercent": 2.39,
+      "ci95": [
+        2.19,
+        2.61
+      ],
+      "missing": 4,
+      "scored": 1196,
+      "coveragePercent": 99.7,
+      "utterances": 1200,
+      "refWords": 29283,
+      "wallSeconds": 30
+    },
+    {
+      "engine": "fish-audio-asr",
+      "werPercent": 2.61,
+      "ci95": [
+        2.39,
+        2.84
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 0
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "werPercent": 2.94,
+      "ci95": [
+        2.52,
+        3.47
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 155
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "werPercent": 3.0,
+      "ci95": [
+        2.77,
+        3.25
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 1367
+    },
+    {
+      "engine": "lemonfox-whisper",
+      "werPercent": 3.02,
+      "ci95": [
+        2.76,
+        3.29
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 0
+    },
+    {
+      "engine": "whisper-large-v3-v20240930",
+      "werPercent": 3.03,
+      "ci95": [
+        2.77,
+        3.31
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 1006
+    },
+    {
+      "engine": "soniox",
+      "werPercent": 3.1,
+      "ci95": [
+        2.84,
+        3.35
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 3655
+    },
+    {
+      "engine": "groq-whisper-v3-turbo",
+      "werPercent": 3.12,
+      "ci95": [
+        2.83,
+        3.43
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 46
+    },
+    {
+      "engine": "elevenlabs-scribe",
+      "werPercent": 3.17,
+      "ci95": [
+        2.9,
+        3.43
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 207
+    },
+    {
+      "engine": "gemini-2.5-flash",
+      "werPercent": 3.62,
+      "ci95": [
+        3.33,
+        3.89
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 0
+    },
+    {
+      "engine": "amazon-transcribe",
+      "werPercent": 3.73,
+      "ci95": [
+        3.45,
+        4.0
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 868
+    },
+    {
+      "engine": "grok-stt",
+      "werPercent": 3.8,
+      "ci95": [
+        3.47,
+        4.17
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 0
+    },
+    {
+      "engine": "parakeet-v3",
+      "werPercent": 3.84,
+      "ci95": [
+        3.55,
+        4.12
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 187
+    },
+    {
+      "engine": "whisper-small",
+      "werPercent": 4.1,
+      "ci95": [
+        3.52,
+        4.88
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 378
+    },
+    {
+      "engine": "apple-speechanalyzer",
+      "werPercent": 4.34,
+      "ci95": [
+        4.05,
+        4.65
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 253
+    },
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "werPercent": 9.49,
+      "ci95": [
+        8.31,
+        10.65
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 206
+    }
+  ]
+}

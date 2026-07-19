@@ -1,0 +1,231 @@
+{
+  "config": "librispeech",
+  "note": "cost is an estimate from audio duration x published rate (pricing.json); latency is isolated (measure_latency.py); throughput is under bulk concurrency, not a clean per-call number.",
+  "rows": [
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "werPercent": 1.47,
+      "ci95": [
+        1.33,
+        1.63
+      ],
+      "missing": 0,
+      "cost_usd": 1.9452,
+      "cost_per_audio_hour": 0.36,
+      "latency_median_s": 1.038,
+      "latency_p90_s": 1.47,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 45.0
+    },
+    {
+      "engine": "assemblyai-universal",
+      "werPercent": 1.55,
+      "ci95": [
+        1.4,
+        1.69
+      ],
+      "missing": 0,
+      "cost_usd": 1.1347,
+      "cost_per_audio_hour": 0.21,
+      "latency_median_s": 2.396,
+      "latency_p90_s": 5.715,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 14.2
+    },
+    {
+      "engine": "fish-audio-asr",
+      "werPercent": 1.73,
+      "ci95": [
+        1.52,
+        1.96
+      ],
+      "missing": 0,
+      "cost_usd": 1.9452,
+      "cost_per_audio_hour": 0.36,
+      "latency_median_s": 0.48,
+      "latency_p90_s": 0.833,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 46.8
+    },
+    {
+      "engine": "grok-stt",
+      "werPercent": 1.82,
+      "ci95": [
+        1.66,
+        1.99
+      ],
+      "missing": 0,
+      "cost_usd": 0.5403,
+      "cost_per_audio_hour": 0.1,
+      "latency_median_s": 0.583,
+      "latency_p90_s": 1.127,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 54.6
+    },
+    {
+      "engine": "gladia-solaria",
+      "werPercent": 1.85,
+      "ci95": [
+        1.7,
+        2.01
+      ],
+      "missing": 0,
+      "cost_usd": 3.296,
+      "cost_per_audio_hour": 0.61,
+      "latency_median_s": 5.85,
+      "latency_p90_s": 7.042,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 720.4
+    },
+    {
+      "engine": "lemonfox-whisper",
+      "werPercent": 1.93,
+      "ci95": [
+        1.76,
+        2.1
+      ],
+      "missing": 0,
+      "cost_usd": 0.9024,
+      "cost_per_audio_hour": 0.167,
+      "latency_median_s": 1.322,
+      "latency_p90_s": 2.075,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 28.5
+    },
+    {
+      "engine": "groq-whisper-v3-turbo",
+      "werPercent": 1.98,
+      "ci95": [
+        1.8,
+        2.14
+      ],
+      "missing": 0,
+      "cost_usd": 0.2161,
+      "cost_per_audio_hour": 0.04,
+      "latency_median_s": 0.47,
+      "latency_p90_s": 0.761,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 0.6
+    },
+    {
+      "engine": "elevenlabs-scribe",
+      "werPercent": 1.99,
+      "ci95": [
+        1.81,
+        2.18
+      ],
+      "missing": 0,
+      "cost_usd": 1.1887,
+      "cost_per_audio_hour": 0.22,
+      "latency_median_s": 1.148,
+      "latency_p90_s": 1.631,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 46.8
+    },
+    {
+      "engine": "azure",
+      "werPercent": 2.19,
+      "ci95": [
+        2.02,
+        2.37
+      ],
+      "missing": 0,
+      "cost_usd": 0.9726,
+      "cost_per_audio_hour": 0.18,
+      "latency_median_s": 1.37,
+      "latency_p90_s": 1.861,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 3890.4
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "werPercent": 2.22,
+      "ci95": [
+        2.05,
+        2.39
+      ],
+      "missing": 0,
+      "cost_usd": 1.621,
+      "cost_per_audio_hour": 0.3,
+      "latency_median_s": 4.714,
+      "latency_p90_s": 6.691,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 14.0
+    },
+    {
+      "engine": "google-chirp",
+      "werPercent": 2.32,
+      "ci95": [
+        2.14,
+        2.49
+      ],
+      "missing": 0,
+      "cost_usd": 5.1872,
+      "cost_per_audio_hour": 0.96,
+      "latency_median_s": 1.396,
+      "latency_p90_s": 1.842,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 17.9
+    },
+    {
+      "engine": "gemini-2.5-flash",
+      "werPercent": 2.49,
+      "ci95": [
+        2.28,
+        2.68
+      ],
+      "missing": 0,
+      "cost_usd": 0.3567,
+      "cost_per_audio_hour": 0.066,
+      "latency_median_s": 1.352,
+      "latency_p90_s": 1.745,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 13.0
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "werPercent": 2.5,
+      "ci95": [
+        2.3,
+        2.7
+      ],
+      "missing": 0,
+      "cost_usd": 2.4855,
+      "cost_per_audio_hour": 0.46,
+      "latency_median_s": 0.477,
+      "latency_p90_s": 0.596,
+      "latency_mode": "sync",
+      "throughput_xrt_bulk": 80.0
+    },
+    {
+      "engine": "soniox",
+      "werPercent": 2.78,
+      "ci95": [
+        2.57,
+        2.98
+      ],
+      "missing": 0,
+      "cost_usd": 0.5403,
+      "cost_per_audio_hour": 0.1,
+      "latency_median_s": 4.147,
+      "latency_p90_s": 4.441,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 12.9
+    },
+    {
+      "engine": "rev",
+      "werPercent": 4.44,
+      "ci95": [
+        4.21,
+        4.69
+      ],
+      "missing": 38,
+      "cost_usd": 2.1517,
+      "cost_per_audio_hour": 0.3982,
+      "latency_median_s": 9.096,
+      "latency_p90_s": 10.834,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 2.9
+    }
+  ]
+}

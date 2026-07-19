@@ -1,0 +1,107 @@
+{
+  "_note": "Pricing basis for cost estimates in report.py. Rates are the pay-as-you-go pre-recorded/batch tier we actually call, in USD per audio-hour unless unit says otherwise, dated 2026-07-15 and consistent with blog part one. Cost cannot be read back from most provider APIs, so report.py estimates it from audio duration processed (from _meta.json) times these rates, applying min_seconds_per_job where a per-job minimum inflates short-clip cost. 'path' flags where the API we use is priced differently from the provider's cheapest tier.",
+  "as_of": "2026-07-15",
+  "providers": {
+    "deepgram-nova-3": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.46,
+      "source": "deepgram.com/pricing (Nova-3 pre-recorded)"
+    },
+    "assemblyai-universal": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.21,
+      "source": "assemblyai.com/pricing (Universal)"
+    },
+    "soniox": { "unit": "per_audio_hour", "rate_usd": 0.1, "source": "soniox.com/pricing (async)" },
+    "speechmatics-enhanced": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.3,
+      "source": "speechmatics.com/pricing (blended; not broken out)"
+    },
+    "gladia-solaria": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.61,
+      "source": "gladia.io/pricing (Solaria)"
+    },
+    "elevenlabs-scribe": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.22,
+      "source": "elevenlabs.io/pricing/api (Scribe)"
+    },
+    "openai-gpt-4o-transcribe": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.36,
+      "source": "openai.com pricing (gpt-4o-transcribe)"
+    },
+    "groq-whisper-v3-turbo": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.04,
+      "source": "groq.com/pricing (whisper-large-v3-turbo batch)"
+    },
+    "lemonfox-whisper": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.167,
+      "source": "lemonfox.ai ($0.50 / 3 hours)"
+    },
+    "rev": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.2,
+      "min_seconds_per_job": 15,
+      "source": "rev.ai/pricing",
+      "note": "15s per-job minimum assumed; verify against invoice"
+    },
+    "amazon-transcribe": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.6,
+      "path": "streaming",
+      "source": "aws.amazon.com/transcribe/pricing (streaming $0.01/min, verified 2026-07-18)",
+      "note": "we use the streaming API (no sync pre-recorded REST) = $0.01/min = $0.60/hr; batch is $0.006/min (~$0.36/hr) but one job per clip. Earlier 1.44 was a stale $0.024/min rate."
+    },
+    "azure": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.18,
+      "path": "fast-transcription",
+      "source": "azure Speech pricing",
+      "note": "fast-transcription tier; verify SKU rate"
+    },
+    "google-chirp": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.96,
+      "path": "sync-recognize",
+      "source": "cloud.google.com/speech-to-text/pricing (V2 standard)",
+      "note": "sync recognize; dynamic-batch tier is ~0.18/hr but a different, slower API"
+    },
+    "gemini-2.5-flash": {
+      "unit": "per_token",
+      "input_usd_per_mtok": 0.3,
+      "output_usd_per_mtok": 2.5,
+      "audio_tokens_per_second": 32,
+      "source": "ai.google.dev pricing (gemini-2.5-flash)",
+      "note": "LLM transcription, token-billed; report.py uses captured usageMetadata when present, else estimates input tokens from audio seconds x 32"
+    },
+    "grok-stt": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.1,
+      "source": "x.ai/news/grok-stt-and-tts-apis (batch)",
+      "note": "xAI Grok STT, launched 2026-04-18"
+    },
+    "fish-audio-asr": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.36,
+      "source": "docs.fish.audio/developer-guide/models-pricing (transcribe-1)",
+      "note": "duration rounded up to the nearest second"
+    },
+    "cartesia-ink-whisper": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.09,
+      "source": "cartesia.ai/pricing (batch ink-whisper = 1 credit/2s)",
+      "note": "no published USD rate; derived from Pro credits ($5/100k = $0.00005/credit x 1800 credits/hr). Free tier is 20k credits/mo (~11h batch)."
+    },
+    "inworld-stt-1": {
+      "unit": "per_audio_hour",
+      "rate_usd": 0.15,
+      "source": "inworld.ai/pricing (STT 1, On-Demand)",
+      "note": "On-Demand/free rate; drops to 0.10/hr on paid tiers. Free tier includes 400 minutes."
+    }
+  }
+}

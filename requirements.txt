@@ -1,0 +1,22 @@
+# OpenAI's whisper package is used ONLY for its EnglishTextNormalizer, so our
+# WER is scored the same way OpenAI scored its published LibriSpeech numbers.
+openai-whisper>=20231117
+
+# Optional: cross-implementation reproduction via Apple MLX (run_mlx.py).
+# Comment out if you only run rescore_published.py / run_whisperkit.py.
+mlx-whisper>=0.4.0
+
+# Optional: NVIDIA Parakeet TDT on-device via MLX (run_parakeet.py).
+# soundfile is used to sum audio duration for the RTF calculation.
+parakeet-mlx>=0.3.0
+soundfile>=0.12
+
+# Optional: out-of-domain dataset sampling (prep_ood_dataset.py / run_ood_engines.py).
+# We read the parquet audio bytes directly and decode with soundfile, so no
+# torchcodec / datasets audio-decode stack is required.
+huggingface_hub>=0.24
+pyarrow>=15
+numpy>=1.24
+
+# Optional: regenerate the README charts (make_charts.py).
+matplotlib>=3.8
