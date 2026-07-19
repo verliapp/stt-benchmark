@@ -22,7 +22,7 @@ import json
 import os
 import sys
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_json(path, default=None):
@@ -66,8 +66,8 @@ def cost_for(engine, meta, pricing, rdir):
 def main():
     cfg = sys.argv[1] if len(sys.argv) > 1 else "librispeech"
     pricing = load_json(os.path.join(ROOT, "pricing.json"))
-    latency = load_json(os.path.join(ROOT, "latency.json"), {})
-    scored = load_json(os.path.join(ROOT, f"results_{cfg}.json"), {})
+    latency = load_json(os.path.join(ROOT, "results", "latency.json"), {})
+    scored = load_json(os.path.join(ROOT, "results", f"results_{cfg}.json"), {})
     wer_by = {r["engine"]: r for r in scored.get("results", [])}
     reports = os.path.join(ROOT, "results", "reports", cfg)
 
@@ -99,7 +99,7 @@ def main():
     out = {"config": cfg, "note": "cost is an estimate from audio duration x published "
            "rate (pricing.json); latency is isolated (measure_latency.py); throughput "
            "is under bulk concurrency, not a clean per-call number.", "rows": rows}
-    json.dump(out, open(os.path.join(ROOT, f"report_{cfg}.json"), "w"), indent=2)
+    json.dump(out, open(os.path.join(ROOT, "results", f"report_{cfg}.json"), "w"), indent=2)
 
     print(f"\n{cfg}\n")
     hdr = f"{'engine':26}{'WER%':>7}{'95% CI':>15}{'cost$':>9}{'$/hr':>7}{'lat med':>9}{'xRT':>7}"
@@ -113,7 +113,7 @@ def main():
                if r["latency_median_s"] is not None else "-")
         xrt = f"{r['throughput_xrt_bulk']:.0f}x" if r["throughput_xrt_bulk"] else "-"
         print(f"{r['engine']:26}{wer:>7}{ci:>15}{cost:>9}{cph:>7}{lat:>9}{xrt:>7}")
-    print(f"\nwrote report_{cfg}.json  (lat 'a' = async: includes job queue + poll)")
+    print(f"\nwrote results/report_{cfg}.json  (lat 'a' = async: includes job queue + poll)")
 
 
 if __name__ == "__main__":

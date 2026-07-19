@@ -17,7 +17,7 @@ import tarfile
 
 import soundfile as sf
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TAR = os.path.join(ROOT, "..", "speechbench", "test-clean.tar.gz")
 OUT = os.path.join(ROOT, "data_librispeech")
 AUDIO = os.path.join(OUT, "audio")

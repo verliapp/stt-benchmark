@@ -16,7 +16,7 @@ import sys
 
 import numpy as np
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL = "mlx-community/whisper-large-v3-turbo"
 
 

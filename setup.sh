@@ -41,7 +41,7 @@ if command -v swift >/dev/null 2>&1; then
   fi
   ( cd WhisperKit && swift build -c release --product whisperkit-cli )
 else
-  echo "    swift not found; skip. rescore_published.py still works without it."
+  echo "    swift not found; skip. src/rescore_published.py still works without it."
 fi
 
-echo "==> done. Try:  ./.venv/bin/python rescore_published.py"
+echo "==> done. Try:  ./.venv/bin/python src/rescore_published.py"

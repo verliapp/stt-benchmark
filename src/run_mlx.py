@@ -11,7 +11,7 @@ import os
 import sys
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIBRI = os.path.join(ROOT, "data", "LibriSpeech", "test-clean")
 RESULTS = os.path.join(ROOT, "results", "mlx.json")
 

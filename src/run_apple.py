@@ -15,7 +15,7 @@ import os
 import subprocess
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIBRI = os.path.join(ROOT, "data", "LibriSpeech", "test-clean")
 FLAT = os.path.join(ROOT, "data", "audio_flat")
 SACLI = os.path.join(ROOT, "SpeechAnalyzerCLI", ".build", "release", "sacli")

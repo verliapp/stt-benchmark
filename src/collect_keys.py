@@ -15,7 +15,7 @@ import sys
 
 HOME = os.path.expanduser("~")
 DEV = os.path.join(HOME, "dev")
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE = os.path.join(HERE, ".env.providers.example")
 TARGET = os.path.join(HERE, ".env.providers")
 

@@ -18,7 +18,7 @@ import json
 import os
 import sys
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
 
     rows.sort(key=lambda r: r["werPercent"])
     json.dump({"config": cfg, "utterances": len(refs), "results": rows},
-              open(f"{ROOT}/results_{cfg}.json", "w"), indent=2)
+              open(f"{ROOT}/results/results_{cfg}.json", "w"), indent=2)
 
     print(f"\n{cfg}  ({len(refs)} utterances)\n")
     print(f"{'engine':30}{'WER%':>8}{'95% CI':>16}{'scored':>8}{'cov%':>7}")

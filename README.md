@@ -1,19 +1,118 @@
-# Reproducing the Apple SpeechAnalyzer vs Whisper benchmark
+# Speech-to-text accuracy benchmark
 
-An independent reproduction of Inscribe's benchmark
+An independent word-error-rate benchmark of the major speech-to-text engines, commercial
+and open, run on the same audio with the same scorer and 95% confidence intervals. It
+covers eighteen cloud APIs and the open and on-device models, across four datasets that
+range from clean read speech to hard conference-call audio, and adds cost and latency next
+to accuracy so the numbers can be compared on more than one axis.
+
+Every number here is reproducible with the scripts in this repo, and the raw per-utterance
+transcripts our runs produced are committed under `results/transcripts/`, so anyone can
+re-score them without re-running a single API call.
+
+Two writeups build on this data:
+
+- [Choosing a speech-to-text API](https://verli.app/blog/choosing-a-speech-to-text-api):
+  the buying-decision guide (pricing, features, rate limits, deployment).
+- [Benchmarking speech-to-text accuracy](https://verli.app/blog/speech-to-text-accuracy-benchmark):
+  the accuracy results, with the full WER, cost, and latency tables.
+
+It started as a reproduction of one on-device benchmark and grew from there. That origin,
+Apple SpeechAnalyzer versus Whisper on LibriSpeech, is still here in full under
+[Where this started](#where-this-started-the-on-device-reproduction); it is now one dataset
+and a handful of engines inside a much larger comparison.
+
+## What's in here
+
+- **Engines.** Eighteen commercial cloud APIs (Deepgram, AssemblyAI, OpenAI, Google,
+  Azure, Amazon, ElevenLabs, Speechmatics, Gladia, Soniox, Rev, Groq, xAI Grok, Fish,
+  Cartesia, Inworld, Lemonfox, and Gemini), plus the open and on-device engines (the
+  Whisper family through WhisperKit, NVIDIA Parakeet v2 and v3, and Apple SpeechAnalyzer).
+  A nineteenth adapter, Resemble, exists in the code but was dropped from the results on
+  cost.
+- **Datasets.** LibriSpeech test-clean (clean read speech), Earnings-22 and SPGISpeech
+  (two kinds of financial earnings-call audio), and AMI (meeting audio). Every engine gets
+  the same files.
+- **Metric.** Corpus WER (total edits over total reference words) with a 95% bootstrap
+  confidence interval, plus a paired bootstrap (`paired_test.py`) for the "is A really
+  better than B" question when two engines land close.
+- **Cost and latency.** `pricing.json` plus `report.py` estimate dollars per audio-hour
+  from the duration each engine processed; `measure_latency.py` times per-call latency in
+  isolation.
+- **Reproducible transcripts.** Every engine's output is committed gzipped under
+  `results/transcripts/`, so the scoring can be re-run offline.
+
+Accuracy depends on the set, and no single engine wins all of them: the engine tied for the
+lowest error on clean read speech is the worst finished engine on hard earnings-call audio,
+and the engine that wins the hard set is only mid-pack on the clean one. The two blog posts
+above carry the full tables; this repo is the code and data behind them.
+
+## Repository layout
+
+All Python lives in `src/` and is run from the repo root (`./.venv/bin/python src/<script>.py`).
+
+- `src/` — cloud adapters, the on-device runners, scoring, the paired bootstrap, cost and
+  latency, and dataset prep.
+- `results/` — committed outputs: per-engine transcripts under `transcripts/`, plus the
+  WER, cost, and latency summaries (`results_*.json`, `report_*.json`, `latency.json`). The
+  large per-clip `reports/` tree is regenerable and gitignored.
+- `SpeechAnalyzerCLI/` — the macOS 26 Swift harness for Apple SpeechAnalyzer.
+- `assets/` — the on-device charts.
+- `pricing.json`, `requirements*.txt`, `setup.sh`, and `.env.providers.example` sit at the
+  root.
+
+## The cloud APIs
+
+Each provider is one adapter in `cloud_adapters.py`, pinned to a flagship model
+(env-overridable), driven by `run_cloud_engines.py` through the same
+`results/reports/<config>/<engine>/` layout the on-device runners use, and scored by the
+same `score_ood.py`. So a cloud API's WER is directly comparable to an open model's.
+
+```bash
+./.venv/bin/pip install -r requirements-cloud.txt   # only AWS + Google need SDKs
+./.venv/bin/python src/prep_librispeech.py              # LibriSpeech test-clean into the OOD format
+
+cp .env.providers.example .env.providers            # then fill in keys (gitignored)
+
+# every provider with a key present, on a dataset (resumable; re-run to fill gaps / retry)
+./.venv/bin/python src/run_cloud_engines.py librispeech
+./.venv/bin/python src/run_cloud_engines.py earnings22
+./.venv/bin/python src/score_ood.py librispeech
+./.venv/bin/python src/score_ood.py earnings22
+
+# cost + latency
+./.venv/bin/python src/report.py earnings22             # merges WER with pricing.json into $/hr
+./.venv/bin/python src/measure_latency.py --n 40        # per-call latency, one clip at a time
+
+# subset / smoke test
+./.venv/bin/python src/run_cloud_engines.py earnings22 deepgram openai --limit 50
+```
+
+The plain-key providers hit synchronous or upload-and-poll REST endpoints. The three cloud
+giants need accounts: Amazon runs per-clip through the streaming API (Transcribe has no sync
+pre-recorded REST), Google uses Speech-to-Text V2 `recognize`, Azure uses the
+fast-transcription API. A few model ids are worth confirming on the first live call because
+vendors rename them (ElevenLabs Scribe v1/v2, AssemblyAI universal/slam-1, Azure
+fast/MAI-transcribe, Google chirp_2/chirp_3); each is an env override documented in
+`.env.providers.example`.
+
+Failures are counted, not hidden. `score_ood.py` scores each engine only on the clips it
+returned and reports coverage, so an engine that refuses a file shows up as a coverage gap
+rather than a silent accuracy hit.
+
+## Where this started: the on-device reproduction
+
+The repo began as an independent reproduction of Inscribe's benchmark
 ["Apple's New Speech API vs Whisper"](https://get-inscribe.com/blog/apple-speech-api-benchmark.html)
-(2026-07-13), which measured Apple's new on-device `SpeechAnalyzer` API against the
-legacy `SFSpeechRecognizer` and several Whisper models on LibriSpeech.
+(2026-07-13), which measured Apple's new on-device `SpeechAnalyzer` API against the legacy
+`SFSpeechRecognizer` and several Whisper models on LibriSpeech. The original is a good,
+unusually transparent benchmark: it publishes its raw per-utterance transcripts. This repo
+re-scores those transcripts and re-runs every engine on the real audio, including Apple
+SpeechAnalyzer through a small macOS 26 Swift harness. It adds the engine the original left
+out (NVIDIA Parakeet), puts 95% confidence intervals on every number, and extends the test
+to two out-of-domain sets (Earnings-22 and AMI).
 
-The original is a good, unusually transparent benchmark: it publishes its raw
-per-utterance transcripts. This repo re-scores those transcripts and re-runs every engine
-on the real audio, including Apple SpeechAnalyzer through a small macOS 26 Swift harness.
-It also adds the engine the original left out (NVIDIA Parakeet), puts 95% confidence
-intervals on every number, and extends the test to two out-of-domain sets (Earnings-22
-and AMI). Every number is reproducible with the scripts here, and the raw transcripts our
-runs produced are committed under `results/transcripts/`.
-
-## TL;DR
+### TL;DR
 
 Numbers are WER (word error rate): the share of words the engine got wrong, so lower is
 better. "pp" means percentage points.
@@ -38,8 +137,6 @@ Every WER below is corpus WER (total word errors / total reference words) with a
 bootstrap confidence interval. When a ranking is close, overlapping intervals are a weak
 signal, so we also run a paired bootstrap (`paired_test.py`): it compares two engines on
 the same clips and is the right test for "is A really better than B."
-
-## What we found
 
 ### LibriSpeech test-clean (2620 utterances, our independent runs)
 
@@ -147,7 +244,7 @@ In short: LibriSpeech and AMI favor the LibriSpeech/AMI-trained models (Parakeet
 Earnings-22 is the only set here not listed in any engine's training data, so it is the
 fairest read of general capability (with the caveat that Apple discloses nothing).
 
-## Sanity checks against published numbers
+### Sanity checks against published numbers
 
 Our self-measured numbers line up with independently published figures, which is the main
 check that the harness and scoring are sound.
@@ -181,7 +278,7 @@ quantization. For context, the leaderboard (read 2026-07-15) reports Whisper
 large-v3-turbo at 11.07 (Earnings-22) and 13.87 cleaned / 15.16 original (AMI), and
 large-v3 at 11.59 and 13.63 / 14.86.
 
-## Re-scoring Inscribe's published transcripts
+### Re-scoring Inscribe's published transcripts
 
 Inscribe released every per-utterance transcript for both Apple engines. Recomputing
 WER from those with OpenAI's normalizer (no audio needed, `rescore_published.py`):
@@ -208,96 +305,60 @@ output, not only that their scoring was sound.
   only for its `EnglishTextNormalizer`); `huggingface_hub` 1.23.0.
 - Apple's speech assets are server-provided and cannot be version-pinned, so the Apple
   numbers are tied to whatever asset shipped as of 2026-07-15 and may drift.
-- Runs dated 2026-07-15.
+- On-device runs dated 2026-07-15; cloud runs 2026-07-16 to 2026-07-18.
 
-## What you can reproduce
+## Reproducing the on-device runs
 
 ```bash
 ./setup.sh                              # venv, LibriSpeech test-clean, WhisperKit CLI (pinned)
 
 # 1. Re-score Inscribe's published Apple transcripts (no audio, ~1 min)
-./.venv/bin/python rescore_published.py
+./.venv/bin/python src/rescore_published.py
 
 # 2. Independently run Whisper on the real audio (WhisperKit CoreML)
-./.venv/bin/python run_whisperkit.py tiny base small large-v3-v20240930 large-v3
+./.venv/bin/python src/run_whisperkit.py tiny base small large-v3-v20240930 large-v3
 
 # 3. Parakeet, the engine the original left out (on-device via MLX)
-./.venv/bin/python run_parakeet.py v2 v3
+./.venv/bin/python src/run_parakeet.py v2 v3
 
 # 4. Apple SpeechAnalyzer on the real audio (macOS 26+, builds a small Swift harness)
 (cd SpeechAnalyzerCLI && swift build -c release)
-./.venv/bin/python run_apple.py
+./.venv/bin/python src/run_apple.py
 
 # 5. Out of domain: full test sets, every engine, then score with CIs
 export HF_TOKEN=...                     # optional, for faster Hugging Face downloads
-./.venv/bin/python prep_ood_dataset.py earnings22
-./.venv/bin/python run_ood_engines.py earnings22
-./.venv/bin/python score_ood.py earnings22
+./.venv/bin/python src/prep_ood_dataset.py earnings22
+./.venv/bin/python src/run_ood_engines.py earnings22
+./.venv/bin/python src/score_ood.py earnings22
 
 # AMI is the same, but drop sub-0.15s clips (--min-dur) and run Whisper in chunks,
 # because the WhisperKit CLI segfaults on the full folder. Apple and Parakeet are normal.
-./.venv/bin/python prep_ood_dataset.py ami --min-dur 0.15
-./.venv/bin/python run_ood_engines.py ami apple parakeet-v2 parakeet-v3
-./.venv/bin/python chunk_whisper_ami.py whisper-small
-./.venv/bin/python chunk_whisper_ami.py whisper-large-v3-v20240930
-./.venv/bin/python score_ood.py ami
+./.venv/bin/python src/prep_ood_dataset.py ami --min-dur 0.15
+./.venv/bin/python src/run_ood_engines.py ami apple parakeet-v2 parakeet-v3
+./.venv/bin/python src/chunk_whisper_ami.py whisper-small
+./.venv/bin/python src/chunk_whisper_ami.py whisper-large-v3-v20240930
+./.venv/bin/python src/score_ood.py ami
 
 # significance of close rankings, and the reference-Whisper control on AMI:
-./.venv/bin/python paired_test.py
-./.venv/bin/python mlx_ami_control.py
+./.venv/bin/python src/paired_test.py
+./.venv/bin/python src/mlx_ami_control.py
 ```
 
 Step 2 accepts `medium` too. `run_mlx.py` is an optional cross-implementation check of
 Whisper via `mlx-whisper`. `make_charts.py` regenerates the charts above (needs matplotlib).
 
-## Commercial cloud APIs (the 12-provider run)
-
-The on-device runs above cover the open/OS engines. The cloud APIs run through the
-same test sets and the same scorer, so their WER is directly comparable. Each
-provider is one adapter in `cloud_adapters.py`, pinned to the flagship model named in
-part one of the blog (env-overridable), and `run_cloud_engines.py` drives them with
-the identical `results/reports/<config>/<engine>/` output the on-device runners use.
-
-```bash
-./.venv/bin/pip install -r requirements-cloud.txt   # only AWS + Google need SDKs
-./.venv/bin/python prep_librispeech.py              # LibriSpeech test-clean into OOD format
-
-cp .env.providers.example .env.providers            # then fill in keys (gitignored)
-
-# all 12 providers on both test sets (resumable; re-run to fill gaps / retry failures)
-./.venv/bin/python run_cloud_engines.py librispeech
-./.venv/bin/python run_cloud_engines.py earnings22
-./.venv/bin/python score_ood.py librispeech
-./.venv/bin/python score_ood.py earnings22
-
-# subset / smoke test
-./.venv/bin/python run_cloud_engines.py earnings22 deepgram openai --limit 50
-```
-
-Providers: `deepgram assemblyai soniox speechmatics gladia elevenlabs openai groq rev
-amazon azure google`. The nine plain-key providers hit synchronous or upload+poll REST
-endpoints. The three cloud giants need accounts: Amazon runs per-clip through the
-streaming API (Transcribe has no sync pre-recorded REST), Google uses Speech-to-Text
-V2 `recognize` (inline, fine for these short clips), Azure uses the fast-transcription
-API. A few model ids are worth confirming on the first live call because vendors rename
-them (ElevenLabs Scribe v1/v2, AssemblyAI universal/slam-1, Azure fast/MAI-transcribe,
-Google chirp_2/chirp_3); each is an env override documented in `.env.providers.example`.
-
-Failures are counted, not hidden: a clip a provider cannot return scores as 100% WER
-for that clip, same rule as the on-device runs, and `score_ood.py` reports the missing
-count per engine.
-
 ## Methodology
 
 - **Corpus:** LibriSpeech `test-clean` (2620 utterances, OpenSLR). Out-of-domain sets
   are the full Earnings-22 and AMI test splits from the Open ASR Leaderboard bundle
-  `hf-audio/esb-datasets-test-only-sorted`.
+  `hf-audio/esb-datasets-test-only-sorted`, plus a 1200-clip sample of SPGISpeech.
 - **Metric:** corpus WER (total edits / total reference words), not the mean of
-  per-utterance WERs. Empty output scores as 100% for that utterance. Each number
-  carries a 95% bootstrap CI over utterances (1000 resamples, fixed seed).
-- **Engine:** WhisperKit CoreML for Whisper, same on-device path as the original.
-  Parakeet via `parakeet-mlx`. Apple SpeechAnalyzer via `SpeechAnalyzerCLI/` (macOS 26
-  Speech framework, fully on-device).
+  per-utterance WERs. Empty or missing output is handled as a coverage gap, reported per
+  engine, rather than silently counted as accuracy. Each number carries a 95% bootstrap
+  CI over utterances (1000 resamples, fixed seed).
+- **Engine (on-device):** WhisperKit CoreML for Whisper, same on-device path as the
+  original. Parakeet via `parakeet-mlx`. Apple SpeechAnalyzer via `SpeechAnalyzerCLI/`
+  (macOS 26 Speech framework, fully on-device).
 - **Normalizer:** OpenAI's `EnglishTextNormalizer`, applied to every engine equally, so
   it shifts all absolute numbers together and leaves rankings unchanged. We use it
   because OpenAI published Whisper's LibriSpeech WER with it.
@@ -310,28 +371,33 @@ count per engine.
   run in chunks of 1500 via `chunk_whisper_ami.py`. Separately, we drop 101 clips shorter
   than 0.15s (backchannels like "Yeah.", single letters; 105 reference words, 0.117% of
   the total) for every engine so all engines are scored on the identical set.
+- **Cost:** estimated from the audio duration each engine processed times its published
+  per-hour rate in `pricing.json`, so it is a modeled figure, not an invoice.
 - **Speed:** Apple and Parakeet run single-stream at roughly 0.02 real-time factor
-  (about 50x faster than audio) on the M4 Pro. WhisperKit was run at the CLI's default
-  concurrency, so its per-file timing is not a clean single-stream figure; we do not
-  rank on speed, and neither should you across machines.
+  (about 50x faster than audio) on the M4 Pro. Cloud latency is measured separately by
+  `measure_latency.py`, one call at a time, since the bulk runs use many workers and that
+  distorts per-call timing. We do not rank on speed across machines.
 
 ## Requirements
 
-- macOS on Apple Silicon (WhisperKit CoreML, Parakeet MLX). `rescore_published.py` runs
-  anywhere with Python.
+- macOS on Apple Silicon for the on-device engines (WhisperKit CoreML, Parakeet MLX).
+  The cloud adapters, `rescore_published.py`, and scoring run anywhere with Python.
 - **macOS 26+** for `run_apple.py` (the SpeechAnalyzer API is macOS 26 only).
-- Xcode / Swift toolchain.
+- Xcode / Swift toolchain for the on-device Whisper and Apple harnesses.
 - Python 3.10+. Note `openai-whisper` pulls in torch (~2 GB); it is used only for the
   text normalizer.
 - ~4 GB disk for LibriSpeech plus the CoreML models, more if you cache the OOD audio.
 
 ## Credits
 
-- Original benchmark and published transcripts: [Inscribe](https://get-inscribe.com/blog/apple-speech-api-benchmark.html).
+- Original on-device benchmark and published transcripts:
+  [Inscribe](https://get-inscribe.com/blog/apple-speech-api-benchmark.html), which
+  inspired this repo.
 - [LibriSpeech](https://www.openslr.org/12) (Panayotov et al., 2015).
 - [WhisperKit](https://github.com/argmaxinc/WhisperKit) by Argmax.
 - [Whisper](https://github.com/openai/whisper) and its English normalizer by OpenAI.
 - [Parakeet](https://huggingface.co/nvidia) by NVIDIA, run via [parakeet-mlx](https://github.com/senstella/parakeet-mlx).
 - Out-of-domain sets from the [Open ASR Leaderboard](https://huggingface.co/spaces/hf-audio/open_asr_leaderboard) ESB bundle (reference WER figures read 2026-07-15).
 
-MIT licensed. Not affiliated with Inscribe, Apple, Argmax, NVIDIA, or OpenAI.
+MIT licensed. Not affiliated with Inscribe, Apple, Argmax, NVIDIA, OpenAI, or any of the
+cloud providers benchmarked here; all product names belong to their owners.

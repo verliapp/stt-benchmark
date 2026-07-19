@@ -21,7 +21,7 @@ import time
 from run_cloud_engines import load_env
 from cloud_adapters import PROVIDERS
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # providers that submit a job then poll for the result (latency includes queue + poll)
 ASYNC = {"assemblyai", "soniox", "speechmatics", "gladia", "rev", "resemble"}
 
@@ -73,7 +73,7 @@ def main():
 
     out = {}
     existing = {}
-    lp = os.path.join(ROOT, "latency.json")
+    lp = os.path.join(ROOT, "results", "latency.json")
     if os.path.exists(lp):
         existing = json.load(open(lp))
 

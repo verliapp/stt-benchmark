@@ -18,7 +18,7 @@ import subprocess
 import sys
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIBRI = os.path.join(ROOT, "data", "LibriSpeech", "test-clean")
 AUDIO_FLAT = os.path.join(ROOT, "data", "audio_flat")
 WHISPERKIT = os.path.join(ROOT, "WhisperKit")

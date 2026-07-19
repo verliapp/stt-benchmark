@@ -21,7 +21,7 @@ import time
 
 from cloud_adapters import PROVIDERS, TranscribeError
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RETRIES = 3
 
 

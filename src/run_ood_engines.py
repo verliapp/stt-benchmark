@@ -21,7 +21,7 @@ import subprocess
 import sys
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 WHISPER_MODELS = ["whisper-small", "whisper-large-v3-v20240930"]  # small + turbo
 PARAKEET = [("parakeet-v2", "mlx-community/parakeet-tdt-0.6b-v2"),
