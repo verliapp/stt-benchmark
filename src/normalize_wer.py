@@ -104,3 +104,38 @@ def bootstrap_ci(counts, resamples: int = 1000, seed: int = 0):
         wers[i] = 100.0 * e[idx].sum() / denom if denom else 0.0
     lo, hi = np.percentile(wers, [2.5, 97.5])
     return (round(float(lo), 2), round(float(hi), 2))
+
+
+# Multilingual scoring is kept separate so the original English path above stays
+# identical. Existing callers of tokens(), score_pairs(), and corpus_wer() retain
+# the exact English normalization and scoring behavior.
+from whisper.normalizers import BasicTextNormalizer
+
+_basic_norm = BasicTextNormalizer()
+_MODES = {"word_en", "word_basic", "cer"}
+
+
+def mode_tokens(text: str, mode: str) -> list[str]:
+    if mode == "word_en":
+        return tokens(text)
+    if mode == "word_basic":
+        return _basic_norm(text or "").split()
+    if mode == "cer":
+        return list("".join(_basic_norm(text or "").split()))
+    raise ValueError(f"unknown scoring mode {mode!r}; choose from {sorted(_MODES)}")
+
+
+def score_pairs_mode(pairs, mode: str):
+    if mode == "word_en":
+        return score_pairs(pairs)
+
+    errors = ref_words = 0
+    counts = []
+    for ref, hyp in pairs:
+        r, h = mode_tokens(ref, mode), mode_tokens(hyp, mode)
+        e = edit_distance(r, h)
+        counts.append((e, len(r)))
+        errors += e
+        ref_words += len(r)
+    wer = 100.0 * errors / ref_words if ref_words else 0.0
+    return (wer, errors, ref_words, counts)

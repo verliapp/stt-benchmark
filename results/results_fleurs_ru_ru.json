@@ -1,0 +1,218 @@
+{
+  "config": "fleurs_ru_ru",
+  "utterances": 200,
+  "metric": "WER",
+  "mode": "word_basic",
+  "results": [
+    {
+      "engine": "gemini-2.5-flash",
+      "werPercent": 6.36,
+      "ci95": [
+        4.98,
+        7.86
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 72
+    },
+    {
+      "engine": "elevenlabs-scribe",
+      "werPercent": 6.47,
+      "ci95": [
+        5.04,
+        7.9
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 41
+    },
+    {
+      "engine": "soniox",
+      "werPercent": 6.52,
+      "ci95": [
+        5.14,
+        8.12
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 551
+    },
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "werPercent": 6.87,
+      "ci95": [
+        5.22,
+        8.69
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 35
+    },
+    {
+      "engine": "google-chirp",
+      "werPercent": 6.92,
+      "ci95": [
+        5.56,
+        8.45
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 66
+    },
+    {
+      "engine": "lemonfox-whisper",
+      "werPercent": 7.16,
+      "ci95": [
+        5.74,
+        8.68
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 55
+    },
+    {
+      "engine": "gladia-solaria",
+      "werPercent": 7.27,
+      "ci95": [
+        5.93,
+        8.76
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 150
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "werPercent": 7.29,
+      "ci95": [
+        5.9,
+        8.68
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 35
+    },
+    {
+      "engine": "groq-whisper-v3-turbo",
+      "werPercent": 7.48,
+      "ci95": [
+        6.03,
+        9.03
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 665
+    },
+    {
+      "engine": "fish-audio-asr",
+      "werPercent": 7.74,
+      "ci95": [
+        6.19,
+        9.24
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 31
+    },
+    {
+      "engine": "grok-stt",
+      "werPercent": 9.12,
+      "ci95": [
+        7.24,
+        11.0
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 55
+    },
+    {
+      "engine": "inworld-stt-1",
+      "werPercent": 9.12,
+      "ci95": [
+        7.24,
+        11.27
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 400
+    },
+    {
+      "engine": "amazon-transcribe",
+      "werPercent": 9.39,
+      "ci95": [
+        7.89,
+        11.15
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 139
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "werPercent": 10.34,
+      "ci95": [
+        8.83,
+        12.04
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 173
+    },
+    {
+      "engine": "azure",
+      "werPercent": 10.88,
+      "ci95": [
+        9.39,
+        12.4
+      ],
+      "missing": 10,
+      "scored": 190,
+      "coveragePercent": 95.0,
+      "utterances": 200,
+      "refWords": 3586,
+      "wallSeconds": 116
+    }
+  ]
+}

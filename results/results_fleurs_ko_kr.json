@@ -1,0 +1,218 @@
+{
+  "config": "fleurs_ko_kr",
+  "utterances": 200,
+  "metric": "WER",
+  "mode": "word_basic",
+  "results": [
+    {
+      "engine": "elevenlabs-scribe",
+      "werPercent": 7.43,
+      "ci95": [
+        5.9,
+        9.05
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 41
+    },
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "werPercent": 9.04,
+      "ci95": [
+        7.44,
+        10.75
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 39
+    },
+    {
+      "engine": "gemini-2.5-flash",
+      "werPercent": 9.59,
+      "ci95": [
+        7.78,
+        11.24
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 72
+    },
+    {
+      "engine": "soniox",
+      "werPercent": 9.62,
+      "ci95": [
+        7.79,
+        11.31
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 540
+    },
+    {
+      "engine": "fish-audio-asr",
+      "werPercent": 10.75,
+      "ci95": [
+        9.01,
+        12.63
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 33
+    },
+    {
+      "engine": "google-chirp",
+      "werPercent": 10.96,
+      "ci95": [
+        9.08,
+        12.75
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 66
+    },
+    {
+      "engine": "inworld-stt-1",
+      "werPercent": 12.63,
+      "ci95": [
+        10.57,
+        14.9
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 392
+    },
+    {
+      "engine": "grok-stt",
+      "werPercent": 12.8,
+      "ci95": [
+        10.6,
+        15.05
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 37
+    },
+    {
+      "engine": "gladia-solaria",
+      "werPercent": 12.91,
+      "ci95": [
+        11.0,
+        14.94
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 154
+    },
+    {
+      "engine": "amazon-transcribe",
+      "werPercent": 13.21,
+      "ci95": [
+        11.36,
+        15.16
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 136
+    },
+    {
+      "engine": "lemonfox-whisper",
+      "werPercent": 13.63,
+      "ci95": [
+        11.71,
+        15.68
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 56
+    },
+    {
+      "engine": "groq-whisper-v3-turbo",
+      "werPercent": 13.66,
+      "ci95": [
+        11.65,
+        15.81
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 667
+    },
+    {
+      "engine": "azure",
+      "werPercent": 16.63,
+      "ci95": [
+        14.37,
+        18.88
+      ],
+      "missing": 12,
+      "scored": 188,
+      "coveragePercent": 94.0,
+      "utterances": 200,
+      "refWords": 2760,
+      "wallSeconds": 110
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "werPercent": 17.05,
+      "ci95": [
+        14.83,
+        19.41
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 189
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "werPercent": 19.0,
+      "ci95": [
+        15.95,
+        22.42
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 35
+    }
+  ]
+}

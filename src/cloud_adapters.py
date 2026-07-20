@@ -1,4 +1,4 @@
-"""Cloud STT adapters for the 12-provider accuracy benchmark.
+"""Cloud STT adapters for the 19-provider accuracy benchmark.
 
 Each adapter is `transcribe(wav_path, cfg) -> str`: it sends one utterance wav to a
 provider's pre-recorded/batch API and returns the plain transcript. Scoring,
@@ -65,6 +65,76 @@ def _env(name, default=None, required=True):
     return val
 
 
+LANG_ALIASES = {
+    "en": "en", "en_us": "en", "english": "en",
+    "es": "es", "es_419": "es", "es_es": "es", "es_mx": "es", "spanish": "es",
+    "fr": "fr", "fr_fr": "fr", "french": "fr",
+    "de": "de", "de_de": "de", "german": "de",
+    "zh": "zh", "zh_cn": "zh", "cmn": "zh", "cmn_hans_cn": "zh", "chinese": "zh",
+    "ja": "ja", "ja_jp": "ja", "japanese": "ja",
+    "ko": "ko", "ko_kr": "ko", "korean": "ko",
+    "ar": "ar", "ar_eg": "ar", "arabic": "ar",
+    "hi": "hi", "hi_in": "hi", "hindi": "hi",
+    "ru": "ru", "ru_ru": "ru", "russian": "ru",
+    "vi": "vi", "vi_vn": "vi", "vietnamese": "vi",
+    "th": "th", "th_th": "th", "thai": "th",
+    "yue": "yue", "cantonese": "yue",
+}
+
+LANG_BARE = {lang: lang for lang in
+             ("en", "es", "fr", "de", "zh", "ja", "ko", "ar", "hi", "ru", "vi", "th")}
+LANG_NAMES = {
+    "en": "english", "es": "spanish", "fr": "french", "de": "german",
+    "zh": "chinese", "ja": "japanese", "ko": "korean", "ar": "arabic",
+    "hi": "hindi", "ru": "russian", "vi": "vietnamese", "th": "thai",
+}
+LANG_DEEPGRAM = {
+    **LANG_BARE, "es": "es-419", "zh": "zh-CN", "ko": "ko-KR", "ar": "ar-EG",
+}
+LANG_ASSEMBLYAI = {lang: lang for lang in
+                   ("en", "es", "fr", "de", "zh", "ja", "ar", "hi", "vi")}
+LANG_SPEECHMATICS = {**LANG_BARE, "zh": "cmn"}
+LANG_GROK = {lang: lang for lang in LANG_BARE if lang != "zh"}
+LANG_FISH = {lang: lang for lang in ("en", "zh", "yue", "ja", "ko")}
+LANG_REV = {**LANG_BARE, "zh": "cmn"}
+LANG_ENGLISH_ONLY = {"en": "en"}
+LANG_AMAZON = {
+    "en": "en-US", "es": "es-US", "fr": "fr-FR", "de": "de-DE",
+    "zh": "zh-CN", "ja": "ja-JP", "ko": "ko-KR", "ar": "ar-SA",
+    "hi": "hi-IN", "ru": "ru-RU", "vi": "vi-VN", "th": "th-TH",
+}
+LANG_AZURE = {
+    "en": "en-US", "es": "es-MX", "fr": "fr-FR", "de": "de-DE",
+    "zh": "zh-CN", "ja": "ja-JP", "ko": "ko-KR", "ar": "ar-EG",
+    "hi": "hi-IN", "ru": "ru-RU", "vi": "vi-VN", "th": "th-TH",
+}
+LANG_GOOGLE = {
+    "en": "en-US", "es": "es-419", "fr": "fr-FR", "de": "de-DE",
+    "zh": "cmn-Hans-CN", "ja": "ja-JP", "ko": "ko-KR", "ar": "ar-EG",
+    "hi": "hi-IN", "ru": "ru-RU", "vi": "vi-VN", "th": "th-TH",
+}
+
+
+def normalize_language(lang):
+    key = (lang or "en").lower().replace("-", "_")
+    if key not in LANG_ALIASES:
+        known = ", ".join(sorted(LANG_BARE))
+        raise ValueError(f"unknown language {lang!r}; use one of: {known}")
+    return LANG_ALIASES[key]
+
+
+def supports_language(cfg, lang):
+    return normalize_language(lang) in cfg["languages"]
+
+
+def provider_language(cfg):
+    lang = normalize_language(cfg.get("lang", "en"))
+    try:
+        return cfg["languages"][lang]
+    except KeyError as e:
+        raise TranscribeError(f"{cfg['engine']} does not support language {lang}") from e
+
+
 def _poll(get_status, is_done, is_error):
     """Poll get_status() until is_done() or is_error(); returns the final payload."""
     waited = 0.0
@@ -85,10 +155,12 @@ def _poll(get_status, is_done, is_error):
 def deepgram(wav, cfg):
     model = _env("DEEPGRAM_MODEL", cfg["model"], required=False)
     key = _env("DEEPGRAM_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.deepgram.com/v1/listen",
-            params={"model": model, "punctuate": "true", "smart_format": "false"},
+            params={"model": model, "language": language,
+                    "punctuate": "true", "smart_format": "false"},
             headers={"Authorization": f"Token {key}", "Content-Type": "audio/wav"},
             data=fh.read(), timeout=TIMEOUT,
         )
@@ -100,12 +172,14 @@ def deepgram(wav, cfg):
 def openai(wav, cfg):
     model = _env("OPENAI_MODEL", cfg["model"], required=False)
     key = _env("OPENAI_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.openai.com/v1/audio/transcriptions",
             headers={"Authorization": f"Bearer {key}"},
             files={"file": (os.path.basename(wav), fh, "audio/wav")},
-            data={"model": model, "response_format": "json"}, timeout=TIMEOUT,
+            data={"model": model, "language": language, "response_format": "json"},
+            timeout=TIMEOUT,
         )
     r.raise_for_status()
     return r.json().get("text", "")
@@ -114,6 +188,7 @@ def openai(wav, cfg):
 def groq(wav, cfg):
     model = _env("GROQ_MODEL", cfg["model"], required=False)
     key = _env("GROQ_API_KEY")
+    language = provider_language(cfg)
     for _ in range(6):
         _groq_throttle()
         with open(wav, "rb") as fh:
@@ -121,7 +196,8 @@ def groq(wav, cfg):
                 "https://api.groq.com/openai/v1/audio/transcriptions",
                 headers={"Authorization": f"Bearer {key}"},
                 files={"file": (os.path.basename(wav), fh, "audio/wav")},
-                data={"model": model, "response_format": "json"}, timeout=TIMEOUT,
+                data={"model": model, "language": language,
+                      "response_format": "json"}, timeout=TIMEOUT,
             )
         if r.status_code == 429:
             time.sleep(float(r.headers.get("retry-after", 5)) + 0.5)
@@ -134,12 +210,13 @@ def groq(wav, cfg):
 def elevenlabs(wav, cfg):
     model = _env("ELEVENLABS_MODEL", cfg["model"], required=False)
     key = _env("ELEVENLABS_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.elevenlabs.io/v1/speech-to-text",
             headers={"xi-api-key": key},
             files={"file": (os.path.basename(wav), fh, "audio/wav")},
-            data={"model_id": model, "language_code": "en",
+            data={"model_id": model, "language_code": language,
                   "tag_audio_events": "false", "diarize": "false"}, timeout=TIMEOUT,
         )
     r.raise_for_status()
@@ -154,11 +231,14 @@ def gemini(wav, cfg):
     import base64
     model = _env("GEMINI_MODEL", cfg["model"], required=False)
     key = _env("GEMINI_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         audio_b64 = base64.b64encode(fh.read()).decode()
     prompt = ("Transcribe the spoken audio verbatim. Output only the exact words "
               "spoken, in order, with nothing added. Do not translate, summarize, "
               "correct grammar, or add commentary. If nothing is said, output nothing.")
+    if normalize_language(cfg.get("lang", "en")) != "en":
+        prompt += f" The spoken language is {language}; preserve that language and script."
     r = requests.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         params={"key": key},
@@ -181,12 +261,13 @@ def lemonfox(wav, cfg):
     # OpenAI-compatible, single Whisper-based model (no model param). Language is
     # given as a full name ("english"), not an ISO code, per Lemonfox's API.
     key = _env("LEMONFOX_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.lemonfox.ai/v1/audio/transcriptions",
             headers={"Authorization": f"Bearer {key}"},
             files={"file": (os.path.basename(wav), fh, "audio/wav")},
-            data={"language": "english", "response_format": "json"}, timeout=TIMEOUT,
+            data={"language": language, "response_format": "json"}, timeout=TIMEOUT,
         )
     r.raise_for_status()
     return r.json().get("text", "")
@@ -198,11 +279,12 @@ def grok(wav, cfg):
     # The file field must be last in the multipart form; requests orders data
     # fields before files, so passing language via data satisfies that.
     key = _env("XAI_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.x.ai/v1/stt",
             headers={"Authorization": f"Bearer {key}"},
-            data={"language": "en"},
+            data={"language": language},
             files={"file": (os.path.basename(wav), fh, "audio/wav")},
             timeout=TIMEOUT,
         )
@@ -215,12 +297,13 @@ def fish(wav, cfg):
     # takes no model param). multipart/form-data. We skip timestamps since we only
     # score transcript text, and that also lowers latency on short clips.
     key = _env("FISH_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.fish.audio/v1/asr",
             headers={"Authorization": f"Bearer {key}"},
             files={"audio": (os.path.basename(wav), fh, "audio/wav")},
-            data={"language": "en", "ignore_timestamps": "true"}, timeout=TIMEOUT,
+            data={"language": language, "ignore_timestamps": "true"}, timeout=TIMEOUT,
         )
     r.raise_for_status()
     return r.json().get("text", "")
@@ -231,13 +314,14 @@ def cartesia(wav, cfg):
     # multipart/form-data; requires the dated Cartesia-Version header.
     model = _env("CARTESIA_MODEL", cfg["model"], required=False)
     key = _env("CARTESIA_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         r = requests.post(
             "https://api.cartesia.ai/stt",
             headers={"Authorization": f"Bearer {key}",
                      "Cartesia-Version": "2026-03-01"},
             files={"file": (os.path.basename(wav), fh, "audio/wav")},
-            data={"model": model, "language": "en"}, timeout=TIMEOUT,
+            data={"model": model, "language": language}, timeout=TIMEOUT,
         )
     r.raise_for_status()
     return r.json().get("text", "")
@@ -250,12 +334,13 @@ def inworld(wav, cfg):
     import base64
     model = _env("INWORLD_MODEL", cfg["model"], required=False)
     key = _env("INWORLD_API_KEY")
+    language = provider_language(cfg)
     with open(wav, "rb") as fh:
         audio_b64 = base64.b64encode(fh.read()).decode()
     r = requests.post(
         "https://api.inworld.ai/stt/v1/transcribe",
         headers={"Authorization": f"Basic {key}", "Content-Type": "application/json"},
-        json={"transcribeConfig": {"modelId": model, "language": "en",
+        json={"transcribeConfig": {"modelId": model, "language": language,
                                    "audioEncoding": "AUTO_DETECT"},
               "audioData": {"content": audio_b64}}, timeout=TIMEOUT,
     )
@@ -268,6 +353,7 @@ def inworld(wav, cfg):
 def assemblyai(wav, cfg):
     model = _env("ASSEMBLYAI_MODEL", cfg["model"], required=False)
     key = _env("ASSEMBLYAI_API_KEY")
+    language = provider_language(cfg)
     base, headers = "https://api.assemblyai.com/v2", {"authorization": key}
     with open(wav, "rb") as fh:
         up = requests.post(f"{base}/upload", headers=headers, data=fh.read(), timeout=TIMEOUT)
@@ -275,7 +361,8 @@ def assemblyai(wav, cfg):
     audio_url = up.json()["upload_url"]
     sub = requests.post(f"{base}/transcript", headers=headers,
                         json={"audio_url": audio_url, "speech_models": [model],
-                              "language_code": "en", "punctuate": True}, timeout=TIMEOUT)
+                              "language_code": language, "punctuate": True},
+                        timeout=TIMEOUT)
     sub.raise_for_status()
     tid = sub.json()["id"]
 
@@ -291,6 +378,7 @@ def assemblyai(wav, cfg):
 
 def gladia(wav, cfg):
     key = _env("GLADIA_API_KEY")
+    language = provider_language(cfg)
     base, headers = "https://api.gladia.io/v2", {"x-gladia-key": key}
     with open(wav, "rb") as fh:
         up = requests.post(f"{base}/upload", headers=headers,
@@ -298,9 +386,13 @@ def gladia(wav, cfg):
                            timeout=TIMEOUT)
     up.raise_for_status()
     audio_url = up.json()["audio_url"]
-    sub = requests.post(f"{base}/pre-recorded", headers=headers,
-                        json={"audio_url": audio_url, "language": "en",
-                              "diarization": False}, timeout=TIMEOUT)
+    sub = requests.post(
+        f"{base}/pre-recorded", headers=headers,
+        json={"audio_url": audio_url,
+              "language_config": {"languages": [language],
+                                  "code_switching": False},
+              "diarization": False}, timeout=TIMEOUT,
+    )
     sub.raise_for_status()
     result_url = sub.json()["result_url"]
 
@@ -317,6 +409,7 @@ def gladia(wav, cfg):
 def soniox(wav, cfg):
     model = _env("SONIOX_MODEL", cfg["model"], required=False)
     key = _env("SONIOX_API_KEY")
+    language = provider_language(cfg)
     base, headers = "https://api.soniox.com/v1", {"Authorization": f"Bearer {key}"}
     file_id = tid = None
     try:
@@ -328,7 +421,7 @@ def soniox(wav, cfg):
         file_id = up.json()["id"]
         sub = requests.post(f"{base}/transcriptions", headers=headers,
                             json={"file_id": file_id, "model": model,
-                                  "language_hints": ["en"]}, timeout=TIMEOUT)
+                                  "language_hints": [language]}, timeout=TIMEOUT)
         sub.raise_for_status()
         tid = sub.json()["id"]
 
@@ -366,9 +459,10 @@ def soniox(wav, cfg):
 def speechmatics(wav, cfg):
     op = _env("SPEECHMATICS_OPERATING_POINT", cfg["model"], required=False)
     key = _env("SPEECHMATICS_API_KEY")
+    language = provider_language(cfg)
     base, headers = "https://asr.api.speechmatics.com/v2", {"Authorization": f"Bearer {key}"}
     config = {"type": "transcription",
-              "transcription_config": {"language": "en", "operating_point": op}}
+              "transcription_config": {"language": language, "operating_point": op}}
     with open(wav, "rb") as fh:
         sub = requests.post(f"{base}/jobs", headers=headers,
                             data={"config": json.dumps(config)},
@@ -387,14 +481,18 @@ def speechmatics(wav, cfg):
     tr = requests.get(f"{base}/jobs/{jid}/transcript", headers=headers,
                       params={"format": "txt"}, timeout=TIMEOUT)
     tr.raise_for_status()
-    return tr.text.strip()
+    # The txt transcript is UTF-8, but requests defaults a charset-less text/*
+    # response to Latin-1, which mojibakes every accented/CJK character. Decode
+    # explicitly so non-English transcripts are scored correctly.
+    return tr.content.decode("utf-8").strip()
 
 
 def rev(wav, cfg):
     model = _env("REV_MODEL", cfg["model"], required=False)
     key = _env("REV_API_KEY")
+    language = provider_language(cfg)
     base, headers = "https://api.rev.ai/speechtotext/v1", {"Authorization": f"Bearer {key}"}
-    options = {"transcriber": model, "language": "en"}
+    options = {"transcriber": model, "language": language}
     with open(wav, "rb") as fh:
         sub = requests.post(f"{base}/jobs", headers=headers,
                             data={"options": json.dumps(options)},
@@ -428,6 +526,7 @@ def rev(wav, cfg):
 def resemble(wav, cfg):
     # Resemble STT (async job): create with a file upload, then poll by uuid.
     key = _env("RESEMBLE_API_KEY")
+    provider_language(cfg)  # The API has no documented language selector.
     base, headers = "https://app.resemble.ai/api/v2", {"Authorization": f"Bearer {key}"}
     with open(wav, "rb") as fh:
         sub = requests.post(f"{base}/speech-to-text", headers=headers,
@@ -452,9 +551,10 @@ def azure(wav, cfg):
     region = _env("AZURE_SPEECH_REGION")
     key = _env("AZURE_SPEECH_KEY")
     model = _env("AZURE_MODEL", "", required=False)
+    language = provider_language(cfg)
     url = (f"https://{region}.api.cognitive.microsoft.com"
            f"/speechtotext/transcriptions:transcribe?api-version=2024-11-15")
-    definition = {"locales": ["en-US"]}
+    definition = {"locales": [language]}
     if model:
         definition["model"] = model
     with open(wav, "rb") as fh:
@@ -476,6 +576,7 @@ def google(wav, cfg):
     project = _env("GCP_PROJECT")
     location = _env("GCP_LOCATION", "global", required=False)
     model = _env("GOOGLE_MODEL", cfg["model"], required=False)
+    language = provider_language(cfg)
     opts = None
     if location != "global":
         opts = ClientOptions(api_endpoint=f"{location}-speech.googleapis.com")
@@ -484,7 +585,7 @@ def google(wav, cfg):
         content = fh.read()
     config = cloud_speech.RecognitionConfig(
         auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
-        language_codes=["en-US"], model=model,
+        language_codes=[language], model=model,
     )
     req = cloud_speech.RecognizeRequest(
         recognizer=f"projects/{project}/locations/{location}/recognizers/_",
@@ -511,6 +612,7 @@ def amazon(wav, cfg):
     from amazon_transcribe.model import TranscriptEvent
 
     region = _env("AWS_REGION")
+    language = provider_language(cfg)
     data, sr = sf.read(wav, dtype="int16")
     if data.ndim > 1:
         data = data[:, 0]
@@ -527,7 +629,7 @@ def amazon(wav, cfg):
     async def run():
         client = TranscribeStreamingClient(region=region)
         stream = await client.start_stream_transcription(
-            language_code="en-US", media_sample_rate_hz=sr,
+            language_code=language, media_sample_rate_hz=sr,
             media_encoding="pcm",
         )
         chunk = 16 * 1024
@@ -547,23 +649,23 @@ def amazon(wav, cfg):
 # model id (env-overridable); workers = safe concurrency for that provider's limits.
 
 PROVIDERS = {
-    "deepgram":     {"engine": "deepgram-nova-3",           "model": "nova-3",                 "fn": deepgram,     "workers": 12},
-    "assemblyai":   {"engine": "assemblyai-universal",      "model": "universal-3-5-pro",      "fn": assemblyai,   "workers": 12},
-    "soniox":       {"engine": "soniox",                    "model": "stt-async-preview",      "fn": soniox,       "workers": 2},
-    "speechmatics": {"engine": "speechmatics-enhanced",     "model": "enhanced",               "fn": speechmatics, "workers": 6},
-    "gladia":       {"engine": "gladia-solaria",            "model": "solaria-1",              "fn": gladia,       "workers": 10},
-    "elevenlabs":   {"engine": "elevenlabs-scribe",         "model": "scribe_v1",              "fn": elevenlabs,   "workers": 8},
-    "openai":       {"engine": "openai-gpt-4o-transcribe",  "model": "gpt-4o-transcribe",      "fn": openai,       "workers": 8},
-    "groq":         {"engine": "groq-whisper-v3-turbo",     "model": "whisper-large-v3-turbo", "fn": groq,         "workers": 2},
-    "lemonfox":     {"engine": "lemonfox-whisper",          "model": "whisper-large-v3",       "fn": lemonfox,     "workers": 8},
-    "gemini":       {"engine": "gemini-2.5-flash",          "model": "gemini-2.5-flash",       "fn": gemini,       "workers": 6},
-    "grok":         {"engine": "grok-stt",                  "model": "grok-stt",               "fn": grok,         "workers": 8},
-    "fish":         {"engine": "fish-audio-asr",            "model": "transcribe-1",           "fn": fish,         "workers": 5},
-    "cartesia":     {"engine": "cartesia-ink-whisper",      "model": "ink-whisper",            "fn": cartesia,     "workers": 6},
-    "inworld":      {"engine": "inworld-stt-1",             "model": "inworld/inworld-stt-1",  "fn": inworld,      "workers": 6},
-    "resemble":     {"engine": "resemble",                  "model": "",                       "fn": resemble,     "workers": 4},
-    "rev":          {"engine": "rev",                       "model": "reverb",                 "fn": rev,          "workers": 6},
-    "amazon":       {"engine": "amazon-transcribe",         "model": "",                       "fn": amazon,       "workers": 4},
-    "azure":        {"engine": "azure",                     "model": "",                       "fn": azure,        "workers": 2},
-    "google":       {"engine": "google-chirp",              "model": "chirp_2",                "fn": google,       "workers": 6},
+    "deepgram":     {"engine": "deepgram-nova-3",           "model": "nova-3",                 "fn": deepgram,     "workers": 12, "languages": LANG_DEEPGRAM},
+    "assemblyai":   {"engine": "assemblyai-universal",      "model": "universal-3-5-pro",      "fn": assemblyai,   "workers": 12, "languages": LANG_ASSEMBLYAI},
+    "soniox":       {"engine": "soniox",                    "model": "stt-async-preview",      "fn": soniox,       "workers": 2,  "languages": LANG_BARE},
+    "speechmatics": {"engine": "speechmatics-enhanced",     "model": "enhanced",               "fn": speechmatics, "workers": 6,  "languages": LANG_SPEECHMATICS},
+    "gladia":       {"engine": "gladia-solaria",            "model": "solaria-1",              "fn": gladia,       "workers": 10, "languages": LANG_BARE},
+    "elevenlabs":   {"engine": "elevenlabs-scribe",         "model": "scribe_v1",              "fn": elevenlabs,   "workers": 8,  "languages": LANG_BARE},
+    "openai":       {"engine": "openai-gpt-4o-transcribe",  "model": "gpt-4o-transcribe",      "fn": openai,       "workers": 8,  "languages": LANG_BARE},
+    "groq":         {"engine": "groq-whisper-v3-turbo",     "model": "whisper-large-v3-turbo", "fn": groq,         "workers": 2,  "languages": LANG_BARE},
+    "lemonfox":     {"engine": "lemonfox-whisper",          "model": "whisper-large-v3",       "fn": lemonfox,     "workers": 8,  "languages": LANG_NAMES},
+    "gemini":       {"engine": "gemini-2.5-flash",          "model": "gemini-2.5-flash",       "fn": gemini,       "workers": 6,  "languages": LANG_NAMES},
+    "grok":         {"engine": "grok-stt",                  "model": "grok-stt",               "fn": grok,         "workers": 8,  "languages": LANG_GROK},
+    "fish":         {"engine": "fish-audio-asr",            "model": "transcribe-1",           "fn": fish,         "workers": 5,  "languages": LANG_FISH},
+    "cartesia":     {"engine": "cartesia-ink-whisper",      "model": "ink-whisper",            "fn": cartesia,     "workers": 6,  "languages": LANG_BARE},
+    "inworld":      {"engine": "inworld-stt-1",             "model": "inworld/inworld-stt-1",  "fn": inworld,      "workers": 6,  "languages": LANG_BARE},
+    "resemble":     {"engine": "resemble",                  "model": "",                       "fn": resemble,     "workers": 4,  "languages": LANG_ENGLISH_ONLY},
+    "rev":          {"engine": "rev",                       "model": "machine",                "fn": rev,          "workers": 6,  "languages": LANG_REV},
+    "amazon":       {"engine": "amazon-transcribe",         "model": "",                       "fn": amazon,       "workers": 4,  "languages": LANG_AMAZON},
+    "azure":        {"engine": "azure",                     "model": "",                       "fn": azure,        "workers": 2,  "languages": LANG_AZURE},
+    "google":       {"engine": "google-chirp",              "model": "chirp_2",                "fn": google,       "workers": 6,  "languages": LANG_GOOGLE},
 }

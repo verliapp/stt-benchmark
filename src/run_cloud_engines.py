@@ -4,9 +4,10 @@ Same contract as run_ood_engines.py: writes results/reports/<config>/<engine>/<u
 ({"text": ...}) plus a per-engine _meta.json, then score_ood.py does WER + CIs. Only
 produces transcripts, so scoring/CIs can be re-run without re-hitting the APIs.
 
-    python run_cloud_engines.py librispeech                       # all 12 providers
+    python run_cloud_engines.py librispeech                       # all 19 providers
     python run_cloud_engines.py earnings22 deepgram openai        # a subset
     python run_cloud_engines.py librispeech --limit 50 groq       # smoke test
+    python run_cloud_engines.py fleurs_ja_jp --lang ja deepgram
 
 Reads keys from .env.providers in this directory (KEY=VALUE lines) if present, else
 from the environment. Resumable: a clip whose <uid>.json already exists and is
@@ -19,10 +20,23 @@ import sys
 import threading
 import time
 
-from cloud_adapters import PROVIDERS, TranscribeError
+from cloud_adapters import PROVIDERS, TranscribeError, normalize_language, supports_language
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RETRIES = 3
+FLEURS_LANGUAGES = {
+    "es_419": "es",
+    "fr_fr": "fr",
+    "de_de": "de",
+    "cmn_hans_cn": "zh",
+    "ja_jp": "ja",
+    "ko_kr": "ko",
+    "ar_eg": "ar",
+    "hi_in": "hi",
+    "ru_ru": "ru",
+    "vi_vn": "vi",
+    "th_th": "th",
+}
 
 
 def load_env():
@@ -56,10 +70,59 @@ def transcribe_one(fn, cfg, wav, out_path):
     return False, f"{type(last).__name__}: {str(last)[:200]}"
 
 
+def choose_language(cfg_name, requested):
+    if requested is not None:
+        return normalize_language(requested)
+    if not cfg_name.startswith("fleurs_"):
+        return "en"
+    suffix = cfg_name.removeprefix("fleurs_")
+    try:
+        return FLEURS_LANGUAGES[suffix]
+    except KeyError as e:
+        raise ValueError(
+            f"cannot infer language for {cfg_name!r}; pass --lang CODE"
+        ) from e
+
+
+def validate_resume_language(cfg, reports):
+    rdir = os.path.join(reports, cfg["engine"])
+    existing = []
+    if os.path.isdir(rdir):
+        existing = [name for name in os.listdir(rdir)
+                    if name.endswith(".json") and name != "_meta.json"
+                    and os.path.getsize(os.path.join(rdir, name)) > 0]
+    if not existing:
+        return
+
+    meta_path = os.path.join(rdir, "_meta.json")
+    recorded = None
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path, encoding="utf-8") as fh:
+                recorded = json.load(fh).get("language")
+        except (OSError, ValueError, AttributeError):
+            recorded = None
+    if recorded != cfg["lang"]:
+        shown = repr(recorded) if recorded is not None else "missing or unreadable"
+        raise RuntimeError(
+            f"refusing to reuse {len(existing)} existing result(s) for "
+            f"{cfg['engine']}: _meta.json language is {shown}, but this run uses "
+            f"{cfg['lang']!r}. Use a matching language or separate the old results."
+        )
+
+
 def run_provider(key, cfg, refs, audio_dir, reports, total_audio):
     engine = cfg["engine"]
     rdir = os.path.join(reports, engine)
     os.makedirs(rdir, exist_ok=True)
+    meta_path = os.path.join(rdir, "_meta.json")
+    meta = {}
+    if os.path.exists(meta_path):
+        with open(meta_path, encoding="utf-8") as fh:
+            meta = json.load(fh)
+    meta["language"] = cfg["lang"]
+    with open(meta_path, "w", encoding="utf-8") as fh:
+        json.dump(meta, fh, indent=2)
 
     todo = []
     for uid in refs:
@@ -96,9 +159,9 @@ def run_provider(key, cfg, refs, audio_dir, reports, total_audio):
     missing = sum(1 for uid in refs
                   if not os.path.exists(os.path.join(rdir, f"{uid}.json"))
                   or os.path.getsize(os.path.join(rdir, f"{uid}.json")) == 0)
-    json.dump({"audioSeconds": round(total_audio), "wallSeconds": round(wall),
-               "missing": missing},
-              open(os.path.join(rdir, "_meta.json"), "w"), indent=2)
+    with open(meta_path, "w", encoding="utf-8") as fh:
+        json.dump({"audioSeconds": round(total_audio), "wallSeconds": round(wall),
+                   "missing": missing, "language": cfg["lang"]}, fh, indent=2)
     print(f"[{key}] finished: {len(refs) - missing}/{len(refs)} transcribed, "
           f"missing={missing}, wall={round(wall)}s", flush=True)
     if errors:
@@ -108,19 +171,50 @@ def run_provider(key, cfg, refs, audio_dir, reports, total_audio):
 def main():
     load_env()
     if len(sys.argv) < 2:
-        sys.exit(f"usage: python run_cloud_engines.py <config> [--limit N] "
+        sys.exit(f"usage: python run_cloud_engines.py <config> [--limit N] [--lang CODE] "
                  f"[providers...]\nproviders: {', '.join(PROVIDERS)}")
     cfg_name = sys.argv[1]
     rest = sys.argv[2:]
     limit = None
-    if "--limit" in rest:
-        i = rest.index("--limit")
-        limit = int(rest[i + 1])
-        rest = rest[:i] + rest[i + 2:]
-    selected = rest or list(PROVIDERS)
+    requested_lang = None
+    selected = []
+    i = 0
+    while i < len(rest):
+        if rest[i] == "--limit":
+            if i + 1 == len(rest):
+                sys.exit("--limit requires a value")
+            limit = int(rest[i + 1])
+            i += 2
+        elif rest[i] == "--lang":
+            if i + 1 == len(rest):
+                sys.exit("--lang requires a value")
+            requested_lang = rest[i + 1]
+            i += 2
+        elif rest[i].startswith("--"):
+            sys.exit(f"unknown option: {rest[i]}")
+        else:
+            selected.append(rest[i])
+            i += 1
+    selected = selected or list(PROVIDERS)
     unknown = [p for p in selected if p not in PROVIDERS]
     if unknown:
         sys.exit(f"unknown providers: {unknown}. known: {', '.join(PROVIDERS)}")
+    try:
+        lang = choose_language(cfg_name, requested_lang)
+    except ValueError as e:
+        sys.exit(str(e))
+
+    runnable = []
+    for key in selected:
+        provider_cfg = PROVIDERS[key]
+        if not supports_language(provider_cfg, lang):
+            print(f"[{key}] skip: engine={provider_cfg['engine']} does not support "
+                  f"language={lang}", flush=True)
+            continue
+        runnable.append((key, {**provider_cfg, "lang": lang}))
+    if not runnable:
+        print(f"no selected providers support language={lang}; nothing to run", flush=True)
+        return
 
     audio_dir = os.path.join(ROOT, f"data_{cfg_name}", "audio")
     refs_path = os.path.join(ROOT, f"data_{cfg_name}", "refs.json")
@@ -136,12 +230,18 @@ def main():
     reports = os.path.join(ROOT, "results", "reports", cfg_name)
     os.makedirs(reports, exist_ok=True)
 
-    print(f"config={cfg_name}  clips={len(refs)}  audio={total_audio/60:.1f}min  "
-          f"providers={selected}", flush=True)
-    for key in selected:
-        run_provider(key, PROVIDERS[key], refs, audio_dir, reports, total_audio)
+    try:
+        for _key, provider_cfg in runnable:
+            validate_resume_language(provider_cfg, reports)
+    except RuntimeError as e:
+        sys.exit(str(e))
 
-    print(f"\nALL DONE. Now: ./.venv/bin/python score_ood.py {cfg_name}", flush=True)
+    print(f"config={cfg_name}  clips={len(refs)}  audio={total_audio/60:.1f}min  "
+          f"language={lang}  providers={[key for key, _cfg in runnable]}", flush=True)
+    for key, provider_cfg in runnable:
+        run_provider(key, provider_cfg, refs, audio_dir, reports, total_audio)
+
+    print(f"\nALL DONE. Now: ./.venv/bin/python src/score_ood.py {cfg_name}", flush=True)
 
 
 if __name__ == "__main__":

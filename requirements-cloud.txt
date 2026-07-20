@@ -1,4 +1,4 @@
-# Extra deps for the 12-provider cloud benchmark (run_cloud_engines.py).
+# Extra deps for the 19-provider cloud benchmark (run_cloud_engines.py).
 # REST providers (deepgram, assemblyai, soniox, speechmatics, gladia, elevenlabs,
 # openai, groq, rev, azure) need only `requests`, already in requirements.txt.
 # The two SDK-only providers:
