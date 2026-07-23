@@ -93,9 +93,9 @@
     },
     "cartesia-ink-whisper": {
       "unit": "per_audio_hour",
-      "rate_usd": 0.54,
-      "source": "cartesia.ai console (STT = 3 credits/second, verified 2026-07-22)",
-      "note": "3 credits/s x 3600 = 10800 credits/hr x $0.00005/credit (Pro $5/100k) = $0.54/hr. Earlier 0.09 wrongly assumed 1 credit/2s. Pro 100k credits/mo ~= 9.3 STT-hours."
+      "rate_usd": 0.09,
+      "source": "docs.cartesia.ai/pricing (ink-whisper: batch /stt = 1 credit per 2s, verified 2026-07-23)",
+      "note": "Batch endpoint (/stt) is 1 credit per 2s of audio = 0.5 credit/s x 3600 = 1800 credits/hr x $0.00005/credit (Pro $5/100k) = $0.09/hr. Real-time websocket STT is double, 1 credit/s = $0.18/hr. Silence is billed. The earlier 0.54 (3 credits/s) was a misread of the console and is wrong."
     },
     "inworld-stt-1": {
       "unit": "per_audio_hour",
