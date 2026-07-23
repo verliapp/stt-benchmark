@@ -310,11 +310,24 @@ def assemblyai_stream(wav, cfg):
     pcm, sr = _read_pcm(wav)
     params = {"sample_rate": sr, "speech_model": model, "format_turns": "true"}
     url = "wss://streaming.assemblyai.com/v3/ws?" + urlencode(params)
-    finals = {}
-    return _run(url, {"Authorization": key}, pcm, sr,
-                lambda msg, t, ev: _assemblyai_handle(msg, t, ev, finals),
-                lambda _ev: " ".join(finals[k] for k in sorted(finals)),
-                close_msg=json.dumps({"type": "Terminate"}), label="assemblyai stream")
+    # The plan caps concurrent sessions and the previous session can linger a moment
+    # after close, so retry on "too many concurrent sessions" with backoff.
+    last = None
+    for attempt in range(5):
+        finals = {}
+        try:
+            return _run(url, {"Authorization": key}, pcm, sr,
+                        lambda msg, t, ev: _assemblyai_handle(msg, t, ev, finals),
+                        lambda _ev: " ".join(finals[k] for k in sorted(finals)),
+                        close_msg=json.dumps({"type": "Terminate"}),
+                        label="assemblyai stream")
+        except TranscribeError as e:
+            last = e
+            if "concurrent" in str(e).lower():
+                time.sleep(2 * (attempt + 1) + 1)
+                continue
+            raise
+    raise last
 
 
 # --- Amazon Transcribe ----------------------------------------------------------
@@ -391,20 +404,28 @@ def gladia_stream(wav, cfg):
     key = _env("GLADIA_API_KEY")
     model = _env("GLADIA_MODEL", cfg["model"], required=False)
     pcm, sr = _read_pcm(wav)
-    init = requests.post(
-        "https://api.gladia.io/v2/live",
-        headers={"x-gladia-key": key},
-        json={"encoding": "wav/pcm", "sample_rate": sr, "bit_depth": 16, "channels": 1,
-              "model": model,
-              "language_config": {"languages": [provider_language(cfg)],
-                                  "code_switching": False},
-              "messages_config": {"receive_partial_transcripts": True}},
-        timeout=30)
-    try:
-        init.raise_for_status()
-    except requests.HTTPError as e:
-        raise TranscribeError(f"gladia init failed: {e}") from e
-    url = init.json()["url"]
+    body = {"encoding": "wav/pcm", "sample_rate": sr, "bit_depth": 16, "channels": 1,
+            "model": model,
+            "language_config": {"languages": [provider_language(cfg)],
+                                "code_switching": False},
+            "messages_config": {"receive_partial_transcripts": True}}
+    # The live-session init 400s/429s when a prior session has not been released yet
+    # (one init POST per clip, back to back), so retry with backoff before giving up.
+    url = None
+    last = ""
+    for attempt in range(6):
+        r = requests.post("https://api.gladia.io/v2/live",
+                          headers={"x-gladia-key": key}, json=body, timeout=30)
+        if r.status_code in (200, 201):
+            url = r.json()["url"]
+            break
+        last = f"{r.status_code} {r.text[:150]}"
+        if r.status_code in (400, 429, 503):
+            time.sleep(2 * (attempt + 1) + 1)
+            continue
+        raise TranscribeError(f"gladia init failed: {last}")
+    if url is None:
+        raise TranscribeError(f"gladia init failed after retries: {last}")
     finals = []
     return _run(url, None, pcm, sr,
                 lambda msg, t, ev: _gladia_handle(msg, t, ev, finals),
