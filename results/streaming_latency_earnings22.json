@@ -1,0 +1,102 @@
+{
+  "amazon-transcribe-stream": {
+    "n": 500,
+    "ttfp_median_s": 0.918,
+    "ttfp_p90_s": 1.017,
+    "ttff_median_s": 4.647,
+    "ttff_p90_s": 11.421,
+    "finalization_lag_median_s": 0.255,
+    "finalization_lag_p90_s": 0.304,
+    "mean_revisions": 11.6
+  },
+  "assemblyai-universal-stream": {
+    "n": 500,
+    "ttfp_median_s": 0.937,
+    "ttfp_p90_s": 0.963,
+    "ttff_median_s": 5.226,
+    "ttff_p90_s": 12.797,
+    "finalization_lag_median_s": 0.16,
+    "finalization_lag_p90_s": 0.243,
+    "mean_revisions": 5.2
+  },
+  "azure-stream": {
+    "n": 500,
+    "ttfp_median_s": 1.255,
+    "ttfp_p90_s": 1.953,
+    "ttff_median_s": 5.274,
+    "ttff_p90_s": 12.132,
+    "finalization_lag_median_s": 0.288,
+    "finalization_lag_p90_s": 0.398,
+    "mean_revisions": 13.2
+  },
+  "cartesia-ink-whisper-stream": {
+    "n": 500,
+    "ttfp_median_s": 3.007,
+    "ttfp_p90_s": 4.895,
+    "ttff_median_s": 3.007,
+    "ttff_p90_s": 4.895,
+    "finalization_lag_median_s": 0.105,
+    "finalization_lag_p90_s": 0.122,
+    "mean_revisions": 0.0
+  },
+  "deepgram-nova-3-stream": {
+    "n": 500,
+    "ttfp_median_s": 0.96,
+    "ttfp_p90_s": 1.025,
+    "ttff_median_s": 2.095,
+    "ttff_p90_s": 4.97,
+    "finalization_lag_median_s": 0.069,
+    "finalization_lag_p90_s": 0.118,
+    "mean_revisions": 5.4
+  },
+  "gladia-solaria-stream": {
+    "n": 71,
+    "ttfp_median_s": 0.991,
+    "ttfp_p90_s": 1.778,
+    "ttff_median_s": 3.475,
+    "ttff_p90_s": 6.485,
+    "finalization_lag_median_s": 0.405,
+    "finalization_lag_p90_s": 0.508,
+    "mean_revisions": 9.4
+  },
+  "google-chirp-stream": {
+    "n": 500,
+    "ttfp_median_s": 5.629,
+    "ttfp_p90_s": 6.788,
+    "ttff_median_s": 6.035,
+    "ttff_p90_s": 13.276,
+    "finalization_lag_median_s": 0.667,
+    "finalization_lag_p90_s": 0.93,
+    "mean_revisions": 0.7
+  },
+  "openai-gpt-4o-transcribe-stream": {
+    "n": 500,
+    "ttfp_median_s": 6.563,
+    "ttfp_p90_s": 14.486,
+    "ttff_median_s": 6.862,
+    "ttff_p90_s": 14.906,
+    "finalization_lag_median_s": 0.692,
+    "finalization_lag_p90_s": 0.935,
+    "mean_revisions": 17.6
+  },
+  "soniox-stream": {
+    "n": 500,
+    "ttfp_median_s": 0.904,
+    "ttfp_p90_s": 1.197,
+    "ttff_median_s": 5.397,
+    "ttff_p90_s": 6.214,
+    "finalization_lag_median_s": 0.116,
+    "finalization_lag_p90_s": 0.166,
+    "mean_revisions": 25.8
+  },
+  "speechmatics-enhanced-stream": {
+    "n": 500,
+    "ttfp_median_s": 0.959,
+    "ttfp_p90_s": 1.25,
+    "ttff_median_s": 1.249,
+    "ttff_p90_s": 1.671,
+    "finalization_lag_median_s": 0.361,
+    "finalization_lag_p90_s": 0.414,
+    "mean_revisions": 17.5
+  }
+}
