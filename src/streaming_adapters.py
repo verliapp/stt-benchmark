@@ -412,22 +412,43 @@ def gladia_stream(wav, cfg):
                 close_msg=json.dumps({"type": "stop_recording"}), label="gladia stream")
 
 
-# --- Cartesia (Ink-Whisper, manual endpoint) ------------------------------------
-# /stt/websocket streams transcript deltas that are additive within a turn, so the
-# fullest text is the last non-empty message. `finalize` flushes, `done` ends. Only
+# --- Cartesia (Ink-Whisper, manual /stt/websocket) ------------------------------
+# Control messages are the LITERAL strings "finalize"/"done" (not JSON). After audio
+# we send "finalize"; the server replies with transcript message(s) (type=transcript,
+# text field) and a flush_done, at which point we send "done" and it closes. Only
 # English is offered on the streaming endpoint.
 
-def _cartesia_handle(msg, t, events, state):
-    data = json.loads(msg)
-    typ = data.get("type")
-    if typ == "error":
-        raise TranscribeError(f"cartesia: {data.get('message') or data}")
-    text = data.get("text", "") or ""
-    is_final = typ in ("turn.end", "final") or bool(data.get("is_final"))
-    if text:
-        state["last"] = text
-    if typ in ("transcript", "turn.update", "turn.end", "final") or text:
-        events.append((t, is_final, text))
+async def _cartesia_run(url, headers, pcm, sr):
+    events, finals = [], []
+    audio_end = 0.0
+    async with websockets.connect(url, additional_headers=headers, max_size=None) as ws:
+        clock = _Clock(asyncio.get_running_loop())
+
+        async def feed():
+            nonlocal audio_end
+            audio_end = await _feed_paced(ws.send, pcm, sr, clock)
+            await ws.send("finalize")
+
+        async def recv():
+            async for msg in ws:
+                d = json.loads(msg)
+                typ = d.get("type")
+                if typ == "error":
+                    raise TranscribeError(f"cartesia: {d.get('message') or d}")
+                if typ == "transcript":
+                    text = d.get("text", "") or ""
+                    is_final = bool(d.get("is_final"))
+                    if is_final and text:
+                        finals.append(text)
+                    events.append((round(clock.now(), 3), is_final, text))
+                elif typ == "flush_done":
+                    await ws.send("done")
+                elif typ == "done":
+                    break
+
+        await asyncio.gather(feed(), recv())
+        wall = round(clock.now(), 3)
+    return StreamResult(" ".join(finals).strip(), events, audio_end, wall)
 
 
 def cartesia_stream(wav, cfg):
@@ -437,12 +458,11 @@ def cartesia_stream(wav, cfg):
     params = {"model": model, "encoding": "pcm_s16le", "sample_rate": sr,
               "cartesia_version": "2026-03-01", "language": provider_language(cfg)}
     url = "wss://api.cartesia.ai/stt/websocket?" + urlencode(params)
-    state = {"last": ""}
-    return _run(url, {"Authorization": f"Bearer {key}", "Cartesia-Version": "2026-03-01"},
-                pcm, sr,
-                lambda msg, t, ev: _cartesia_handle(msg, t, ev, state),
-                lambda _ev: state["last"],
-                close_msg=json.dumps({"type": "finalize"}), label="cartesia stream")
+    headers = {"Authorization": f"Bearer {key}", "Cartesia-Version": "2026-03-01"}
+    try:
+        return asyncio.run(_cartesia_run(url, headers, pcm, sr))
+    except (OSError, websockets.WebSocketException) as e:
+        raise TranscribeError(f"cartesia stream failed: {type(e).__name__}: {e}") from e
 
 
 # --- Speechmatics (realtime v2) -------------------------------------------------
