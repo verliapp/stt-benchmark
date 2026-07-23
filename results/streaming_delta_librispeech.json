@@ -1,0 +1,118 @@
+{
+  "config": "librispeech",
+  "rows": [
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "n": 500,
+      "streamWer": 1.52,
+      "batchWer": 1.61,
+      "delta": -0.09,
+      "deltaCi95": [
+        -0.25,
+        0.07
+      ],
+      "tie": true
+    },
+    {
+      "engine": "assemblyai-universal",
+      "n": 627,
+      "streamWer": 1.74,
+      "batchWer": 1.55,
+      "delta": 0.19,
+      "deltaCi95": [
+        0.09,
+        0.31
+      ],
+      "tie": false
+    },
+    {
+      "engine": "gladia-solaria",
+      "n": 500,
+      "streamWer": 2.58,
+      "batchWer": 2.03,
+      "delta": 0.55,
+      "deltaCi95": [
+        0.3,
+        0.78
+      ],
+      "tie": false
+    },
+    {
+      "engine": "google-chirp",
+      "n": 500,
+      "streamWer": 2.72,
+      "batchWer": 2.56,
+      "delta": 0.16,
+      "deltaCi95": [
+        0.04,
+        0.31
+      ],
+      "tie": false
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "n": 500,
+      "streamWer": 2.78,
+      "batchWer": 2.39,
+      "delta": 0.39,
+      "deltaCi95": [
+        0.19,
+        0.6
+      ],
+      "tie": false
+    },
+    {
+      "engine": "azure",
+      "n": 500,
+      "streamWer": 2.86,
+      "batchWer": 2.35,
+      "delta": 0.5,
+      "deltaCi95": [
+        0.21,
+        0.84
+      ],
+      "tie": false
+    },
+    {
+      "engine": "soniox",
+      "n": 666,
+      "streamWer": 3.17,
+      "batchWer": 2.88,
+      "delta": 0.29,
+      "deltaCi95": [
+        0.01,
+        0.59
+      ],
+      "tie": false
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "n": 758,
+      "streamWer": 3.25,
+      "batchWer": 2.58,
+      "delta": 0.67,
+      "deltaCi95": [
+        0.48,
+        0.86
+      ],
+      "tie": false
+    },
+    {
+      "engine": "cartesia-ink-whisper",
+      "n": 500,
+      "streamWer": 3.43,
+      "batchWer": 2.04,
+      "delta": 1.38,
+      "deltaCi95": [
+        1.01,
+        1.85
+      ],
+      "tie": false
+    },
+    {
+      "engine": "amazon-transcribe",
+      "n": 666,
+      "streamWer": null
+    }
+  ]
+}

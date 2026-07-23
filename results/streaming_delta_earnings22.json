@@ -1,0 +1,118 @@
+{
+  "config": "earnings22",
+  "rows": [
+    {
+      "engine": "assemblyai-universal",
+      "n": 500,
+      "streamWer": 11.23,
+      "batchWer": 10.26,
+      "delta": 0.97,
+      "deltaCi95": [
+        0.47,
+        1.58
+      ],
+      "tie": false
+    },
+    {
+      "engine": "azure",
+      "n": 499,
+      "streamWer": 11.34,
+      "batchWer": 10.47,
+      "delta": 0.87,
+      "deltaCi95": [
+        0.12,
+        1.65
+      ],
+      "tie": false
+    },
+    {
+      "engine": "soniox",
+      "n": 500,
+      "streamWer": 11.69,
+      "batchWer": 11.17,
+      "delta": 0.52,
+      "deltaCi95": [
+        -0.14,
+        1.16
+      ],
+      "tie": true
+    },
+    {
+      "engine": "google-chirp",
+      "n": 499,
+      "streamWer": 12.6,
+      "batchWer": 12.73,
+      "delta": -0.14,
+      "deltaCi95": [
+        -0.63,
+        0.36
+      ],
+      "tie": true
+    },
+    {
+      "engine": "speechmatics-enhanced",
+      "n": 500,
+      "streamWer": 12.6,
+      "batchWer": 11.9,
+      "delta": 0.7,
+      "deltaCi95": [
+        0.37,
+        1.08
+      ],
+      "tie": false
+    },
+    {
+      "engine": "cartesia-ink-whisper",
+      "n": 500,
+      "streamWer": 14.01,
+      "batchWer": 11.06,
+      "delta": 2.95,
+      "deltaCi95": [
+        2.24,
+        3.64
+      ],
+      "tie": false
+    },
+    {
+      "engine": "deepgram-nova-3",
+      "n": 500,
+      "streamWer": 14.72,
+      "batchWer": 15.64,
+      "delta": -0.93,
+      "deltaCi95": [
+        -2.07,
+        0.11
+      ],
+      "tie": true
+    },
+    {
+      "engine": "openai-gpt-4o-transcribe",
+      "n": 500,
+      "streamWer": 17.16,
+      "batchWer": 16.48,
+      "delta": 0.68,
+      "deltaCi95": [
+        -1.0,
+        2.38
+      ],
+      "tie": true
+    },
+    {
+      "engine": "gladia-solaria",
+      "n": 71,
+      "streamWer": 20.59,
+      "batchWer": 28.18,
+      "delta": -7.59,
+      "deltaCi95": [
+        -37.04,
+        5.63
+      ],
+      "tie": true
+    },
+    {
+      "engine": "amazon-transcribe",
+      "n": 500,
+      "streamWer": null
+    }
+  ]
+}
