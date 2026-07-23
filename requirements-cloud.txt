@@ -4,3 +4,6 @@
 # The two SDK-only providers:
 amazon-transcribe>=0.6.2      # Amazon Transcribe streaming (per-clip)
 google-cloud-speech>=2.27.0   # Google Cloud Speech-to-Text V2 (recognize)
+
+# Real-time streaming adapters (streaming_adapters.py) talk WebSocket.
+websockets>=13
