@@ -23,9 +23,11 @@ the provider key in .env.providers):
     ./.venv/bin/python src/streaming_adapters.py deepgram --n 20
 """
 import asyncio
+import base64
 import json
 import os
 import sys
+import threading
 import time
 from dataclasses import dataclass, field
 from urllib.parse import urlencode
@@ -37,8 +39,10 @@ import websockets
 from cloud_adapters import (
     LANG_AMAZON,
     LANG_ASSEMBLYAI,
+    LANG_AZURE,
     LANG_BARE,
     LANG_DEEPGRAM,
+    LANG_GOOGLE,
     LANG_SPEECHMATICS,
     TranscribeError,
     _env,
@@ -82,6 +86,24 @@ def _read_pcm(wav):
     if data.ndim > 1:
         data = data[:, 0]
     return data.tobytes(), int(sr)
+
+
+def _read_pcm_resampled(wav, target_sr):
+    """16-bit mono PCM resampled to target_sr (polyphase). For engines that reject
+    the source rate, e.g. OpenAI Realtime requires >= 24 kHz."""
+    import math
+
+    import numpy as np
+    from scipy.signal import resample_poly
+
+    data, sr = sf.read(wav, dtype="int16")
+    if data.ndim > 1:
+        data = data[:, 0]
+    if sr != target_sr:
+        g = math.gcd(int(target_sr), int(sr))
+        data = resample_poly(data.astype(np.float32), target_sr // g, sr // g)
+        data = np.clip(np.round(data), -32768, 32767).astype(np.int16)
+    return data.tobytes(), int(target_sr)
 
 
 async def _feed_paced(send, pcm, sr, clock, chunk_ms=CHUNK_MS):
@@ -498,6 +520,186 @@ def speechmatics_stream(wav, cfg):
         raise TranscribeError(f"speechmatics stream failed: {type(e).__name__}: {e}") from e
 
 
+# --- Google (Speech-to-Text V2 streaming, gRPC) ---------------------------------
+# gRPC bidi stream, not a WebSocket: the request generator yields one config request
+# then paced audio requests, and we timestamp responses off the same monotonic clock.
+# Zeroed at the first audio request (the config request goes first and is untimed).
+
+def google_stream(wav, cfg):
+    from google.api_core.client_options import ClientOptions
+    from google.cloud import speech_v2
+    from google.cloud.speech_v2.types import cloud_speech
+
+    project = _env("GCP_PROJECT")
+    location = _env("GCP_LOCATION", "global", required=False)
+    model = _env("GOOGLE_MODEL", cfg["model"], required=False)
+    language = provider_language(cfg)
+    opts = (ClientOptions(api_endpoint=f"{location}-speech.googleapis.com")
+            if location != "global" else None)
+    client = speech_v2.SpeechClient(client_options=opts)
+    pcm, sr = _read_pcm(wav)
+    rc = cloud_speech.RecognitionConfig(
+        explicit_decoding_config=cloud_speech.ExplicitDecodingConfig(
+            encoding=cloud_speech.ExplicitDecodingConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=sr, audio_channel_count=1),
+        language_codes=[language], model=model)
+    config_req = cloud_speech.StreamingRecognizeRequest(
+        recognizer=f"projects/{project}/locations/{location}/recognizers/_",
+        streaming_config=cloud_speech.StreamingRecognitionConfig(
+            config=rc,
+            streaming_features=cloud_speech.StreamingRecognitionFeatures(
+                interim_results=True)))
+    events, finals, base, audio_end = [], [], [None], [0.0]
+    step = int(sr * CHUNK_MS / 1000) * 2
+
+    def gen():
+        yield config_req
+        base[0] = time.monotonic()
+        sent = 0
+        for i in range(0, len(pcm), step):
+            yield cloud_speech.StreamingRecognizeRequest(audio=pcm[i:i + step])
+            sent += 1
+            delay = sent * (CHUNK_MS / 1000.0) - (time.monotonic() - base[0])
+            if delay > 0:
+                time.sleep(delay)
+        audio_end[0] = round(time.monotonic() - base[0], 3)
+
+    try:
+        for resp in client.streaming_recognize(requests=gen()):
+            t = round(time.monotonic() - base[0], 3) if base[0] else 0.0
+            for res in resp.results:
+                if not res.alternatives:
+                    continue
+                txt = res.alternatives[0].transcript
+                if res.is_final:
+                    finals.append(txt)
+                events.append((t, bool(res.is_final), txt))
+    except Exception as e:  # noqa: BLE001 - surface as a countable failure
+        raise TranscribeError(f"google stream failed: {type(e).__name__}: {e}") from e
+    wall = round(time.monotonic() - base[0], 3) if base[0] else 0.0
+    return StreamResult(" ".join(finals).strip(), events, audio_end[0], wall)
+
+
+# --- Azure (Speech SDK continuous recognition) ----------------------------------
+# The SDK is callback-based: a PushAudioInputStream is fed paced audio on this thread
+# while `recognizing` (partial) and `recognized` (final) events fire on SDK threads.
+
+def azure_stream(wav, cfg):
+    import azure.cognitiveservices.speech as speechsdk
+
+    region = _env("AZURE_SPEECH_REGION")
+    key = _env("AZURE_SPEECH_KEY")
+    language = provider_language(cfg)
+    pcm, sr = _read_pcm(wav)
+    speech_config = speechsdk.SpeechConfig(subscription=key, region=region)
+    speech_config.speech_recognition_language = language
+    fmt = speechsdk.audio.AudioStreamFormat(samples_per_second=sr, bits_per_sample=16,
+                                            channels=1)
+    push = speechsdk.audio.PushAudioInputStream(stream_format=fmt)
+    recognizer = speechsdk.SpeechRecognizer(
+        speech_config=speech_config,
+        audio_config=speechsdk.audio.AudioConfig(stream=push))
+
+    events, finals, clock = [], [], {"base": None}
+    done = threading.Event()
+
+    def now():
+        return round(time.monotonic() - clock["base"], 3) if clock["base"] else 0.0
+
+    recognizer.recognizing.connect(
+        lambda e: events.append((now(), False, e.result.text)) if e.result.text else None)
+
+    def on_recognized(e):
+        if e.result.text:
+            finals.append(e.result.text)
+            events.append((now(), True, e.result.text))
+
+    recognizer.recognized.connect(on_recognized)
+    recognizer.session_stopped.connect(lambda e: done.set())
+    recognizer.canceled.connect(lambda e: done.set())
+
+    recognizer.start_continuous_recognition()
+    clock["base"] = time.monotonic()
+    step = int(sr * CHUNK_MS / 1000) * 2
+    sent = 0
+    for i in range(0, len(pcm), step):
+        push.write(pcm[i:i + step])
+        sent += 1
+        delay = sent * (CHUNK_MS / 1000.0) - now()
+        if delay > 0:
+            time.sleep(delay)
+    audio_end = now()
+    push.close()
+    done.wait(timeout=30)
+    wall = now()
+    recognizer.stop_continuous_recognition()
+    return StreamResult(" ".join(finals).strip(), events, audio_end, wall)
+
+
+# --- OpenAI (Realtime transcription session, WebSocket) -------------------------
+# Realtime sends audio as base64 inside JSON (not binary frames), so it needs its own
+# feeder. turn_detection is off; we commit the buffer after the audio, then read the
+# input_audio_transcription delta/completed events.
+
+async def _openai_run(pcm, sr, model, language, key):
+    events, done_text = [], [""]
+    audio_end = 0.0
+    url = "wss://api.openai.com/v1/realtime?intent=transcription"
+    headers = {"Authorization": f"Bearer {key}"}
+    async with websockets.connect(url, additional_headers=headers, max_size=None) as ws:
+        await ws.send(json.dumps({
+            "type": "session.update",
+            "session": {"type": "transcription",
+                        "audio": {"input": {
+                            "format": {"type": "audio/pcm", "rate": sr},
+                            "transcription": {"model": model, "language": language},
+                            "turn_detection": None}}}}))
+        clock = _Clock(asyncio.get_running_loop())
+        step = int(sr * CHUNK_MS / 1000) * 2
+
+        async def feed():
+            nonlocal audio_end
+            sent = 0
+            for i in range(0, len(pcm), step):
+                chunk = base64.b64encode(pcm[i:i + step]).decode()
+                await ws.send(json.dumps({"type": "input_audio_buffer.append",
+                                          "audio": chunk}))
+                sent += 1
+                delay = sent * (CHUNK_MS / 1000.0) - clock.now()
+                if delay > 0:
+                    await asyncio.sleep(delay)
+            audio_end = round(clock.now(), 3)
+            await ws.send(json.dumps({"type": "input_audio_buffer.commit"}))
+
+        async def recv():
+            async for msg in ws:
+                d = json.loads(msg)
+                typ = d.get("type", "")
+                if typ == "error":
+                    raise TranscribeError(f"openai: {d.get('error', {}).get('message', d)}")
+                if typ.endswith("input_audio_transcription.delta"):
+                    events.append((round(clock.now(), 3), False, d.get("delta", "")))
+                elif typ.endswith("input_audio_transcription.completed"):
+                    done_text[0] = d.get("transcript", "") or ""
+                    events.append((round(clock.now(), 3), True, done_text[0]))
+                    break
+
+        await asyncio.gather(feed(), recv())
+        wall = round(clock.now(), 3)
+    return StreamResult(done_text[0].strip(), events, audio_end, wall)
+
+
+def openai_stream(wav, cfg):
+    key = _env("OPENAI_API_KEY")
+    model = _env("OPENAI_STREAM_MODEL", cfg["model"], required=False)
+    # Realtime rejects rates below 24 kHz, so a 16 kHz source must be upsampled.
+    pcm, sr = _read_pcm_resampled(wav, 24000)
+    try:
+        return asyncio.run(_openai_run(pcm, sr, model, provider_language(cfg), key))
+    except (OSError, websockets.WebSocketException) as e:
+        raise TranscribeError(f"openai stream failed: {type(e).__name__}: {e}") from e
+
+
 # --- Registry -------------------------------------------------------------------
 # Same shape as cloud_adapters.PROVIDERS, minus `workers`: streaming runs one clip at
 # a time so real-time pacing is honest, so there is no per-provider concurrency knob.
@@ -516,6 +718,12 @@ PROVIDERS_STREAM = {
                  "fn": cartesia_stream, "languages": {"en": "en"}},
     "speechmatics": {"engine": "speechmatics-enhanced-stream", "model": "enhanced",
                      "fn": speechmatics_stream, "languages": LANG_SPEECHMATICS},
+    "google": {"engine": "google-chirp-stream", "model": "chirp_2",
+               "fn": google_stream, "languages": LANG_GOOGLE},
+    "azure": {"engine": "azure-stream", "model": "",
+              "fn": azure_stream, "languages": LANG_AZURE},
+    "openai": {"engine": "openai-gpt-4o-transcribe-stream", "model": "gpt-4o-transcribe",
+               "fn": openai_stream, "languages": LANG_BARE},
 }
 
 
