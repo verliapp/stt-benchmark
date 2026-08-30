@@ -187,6 +187,20 @@
       "wallSeconds": 128
     },
     {
+      "engine": "parakeet-v3",
+      "werPercent": 6.05,
+      "ci95": [
+        4.53,
+        7.56
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 4857,
+      "wallSeconds": 46
+    },
+    {
       "engine": "amazon-transcribe",
       "werPercent": 6.2,
       "ci95": [
@@ -213,6 +227,20 @@
       "utterances": 200,
       "refWords": 4857,
       "wallSeconds": 88
+    },
+    {
+      "engine": "apple-speechanalyzer",
+      "werPercent": 7.04,
+      "ci95": [
+        5.42,
+        8.63
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 4857,
+      "wallSeconds": 31
     },
     {
       "engine": "deepgram-nova-3",

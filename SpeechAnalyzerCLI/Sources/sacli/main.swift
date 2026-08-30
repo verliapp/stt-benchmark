@@ -100,7 +100,9 @@ private enum CLIError: LocalizedError {
 
 @main
 private struct SpeechAnalyzerCLI {
-    private static let locale = Locale(identifier: "en-US")
+    // Override with SACLI_LOCALE (for example de-DE) to run a non-English FLEURS set.
+    private static let locale = Locale(
+        identifier: ProcessInfo.processInfo.environment["SACLI_LOCALE"] ?? "en-US")
 
     static func main() async {
         do {
@@ -133,6 +135,11 @@ private struct SpeechAnalyzerCLI {
             throw CLIError.message("SpeechTranscriber is unavailable on this Mac")
         }
         let selectedLocale = locale
+        // Apple allows five reserved locales per app; release the others so a multi-language
+        // benchmark run does not hit "Too many allocated locales".
+        for reserved in await AssetInventory.reservedLocales where reserved.identifier != selectedLocale.identifier {
+            _ = await AssetInventory.release(reservedLocale: reserved)
+        }
         let assetProbe = SpeechTranscriber(locale: selectedLocale, preset: .transcription)
         let modules: [any SpeechModule] = [assetProbe]
         let installed = await SpeechTranscriber.installedLocales.contains {
@@ -144,31 +151,31 @@ private struct SpeechAnalyzerCLI {
             do {
                 request = try await AssetInventory.assetInstallationRequest(supporting: modules)
             } catch {
-                throw CLIError.message("Failed to create the en-US speech asset installation request: \(error)")
+                throw CLIError.message("Failed to create the \(locale.identifier) speech asset installation request: \(error)")
             }
             guard let request else {
                 let status = await AssetInventory.status(forModules: modules)
                 guard status == .installed else {
-                    throw CLIError.message("No en-US speech asset installation request is available (status: \(status))")
+                    throw CLIError.message("No \(locale.identifier) speech asset installation request is available (status: \(status))")
                 }
                 return selectedLocale
             }
             do {
                 try await request.downloadAndInstall()
             } catch {
-                throw CLIError.message("Failed to download and install the en-US speech asset: \(error)")
+                throw CLIError.message("Failed to download and install the \(locale.identifier) speech asset: \(error)")
             }
         }
 
         let finalStatus = await AssetInventory.status(forModules: modules)
         guard finalStatus == .installed else {
-            throw CLIError.message("The en-US speech asset is not installed (status: \(finalStatus))")
+            throw CLIError.message("The \(locale.identifier) speech asset is not installed (status: \(finalStatus))")
         }
 
         do {
             _ = try await AssetInventory.reserve(locale: selectedLocale)
         } catch {
-            throw CLIError.message("Failed to reserve the installed en-US speech asset: \(error)")
+            throw CLIError.message("Failed to reserve the installed \(locale.identifier) speech asset: \(error)")
         }
         return selectedLocale
     }

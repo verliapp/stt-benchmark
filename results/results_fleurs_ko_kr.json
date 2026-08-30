@@ -173,6 +173,20 @@
       "wallSeconds": 667
     },
     {
+      "engine": "apple-speechanalyzer",
+      "werPercent": 15.61,
+      "ci95": [
+        13.55,
+        17.64
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 25
+    },
+    {
       "engine": "azure",
       "werPercent": 16.63,
       "ci95": [

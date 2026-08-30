@@ -173,6 +173,20 @@
       "wallSeconds": 400
     },
     {
+      "engine": "parakeet-v3",
+      "werPercent": 9.18,
+      "ci95": [
+        7.75,
+        10.77
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 3771,
+      "wallSeconds": 48
+    },
+    {
       "engine": "amazon-transcribe",
       "werPercent": 9.39,
       "ci95": [

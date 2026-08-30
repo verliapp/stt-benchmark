@@ -187,6 +187,20 @@
       "wallSeconds": 63
     },
     {
+      "engine": "apple-speechanalyzer",
+      "werPercent": 6.09,
+      "ci95": [
+        5.15,
+        7.12
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 9893,
+      "wallSeconds": 29
+    },
+    {
       "engine": "google-chirp",
       "werPercent": 7.68,
       "ci95": [
