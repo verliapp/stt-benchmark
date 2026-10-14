@@ -73,6 +73,20 @@
       "wallSeconds": 0
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 2.66,
+      "ci95": [
+        2.45,
+        2.9
+      ],
+      "missing": 0,
+      "scored": 1200,
+      "coveragePercent": 100.0,
+      "utterances": 1200,
+      "refWords": 29400,
+      "wallSeconds": 1323
+    },
+    {
       "engine": "deepgram-nova-3",
       "werPercent": 2.94,
       "ci95": [
@@ -268,5 +282,7 @@
       "refWords": 29400,
       "wallSeconds": 206
     }
-  ]
+  ],
+  "metric": "WER",
+  "mode": "word_en"
 }

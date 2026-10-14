@@ -51,6 +51,59 @@ scrambles on hard audio. Numbers are WER percent (lower is better); the full tab
 eighteen cloud engines, plus cost and latency, are in the
 [accuracy writeup](https://verli.app/blog/speech-to-text-accuracy-benchmark).
 
+### Giggy evaluation (2026-10-13)
+
+Giggy is an additional provider in the runner (`giggy`, output engine
+`giggy-free-stt-v1`). It uses the paid **Fast** recording API, as requested by
+the vendor for this evaluation. The API accepts PCM16 mono 16 kHz WAV, returns
+an admission UUID, and requires polling and downloading the durable final
+transcript. API credentials are never sent to the signed artifact host. The
+adapter locally resamples other input sample rates, leaves the dataset files
+unchanged, and reports recordings shorter than the provider's 0.5-second minimum
+as coverage gaps without padding them.
+
+The vendor's email calls the model **Giggy Free STT v1** and says it is their own.
+The public docs and verified transcript artifacts instead identify
+**Qwen/Qwen3-ASR-1.7B**. Every saved clip includes the actual model, revision, and
+worker source commit. Report that distinction when citing the results; the API
+does not offer a selectable STT model parameter.
+
+```bash
+# GIGGY_API_KEY belongs only in the gitignored .env.providers.
+./.venv/bin/python src/run_cloud_engines.py librispeech giggy
+./.venv/bin/python src/score_ood.py librispeech --engine giggy-free-stt-v1
+./.venv/bin/python src/report.py librispeech --engine giggy-free-stt-v1
+./.venv/bin/python src/measure_latency.py --n 40 giggy
+./.venv/bin/python src/report_giggy.py
+```
+
+The `--engine` scoring/report options update only that provider and preserve the
+other engines' existing results. Admission UUIDs are saved under each provider's
+gitignored `.jobs/` directory so a retry resumes an admitted recording. Ambiguous
+uploads are not automatically repeated. Deterministic input rejections are not
+retried. Final transcripts retain the standard scorer's treatment of empty text
+as deletions, and unavailable transcripts as coverage gaps.
+
+The production STT upload response advertises 60 uploads per minute even in Fast
+mode. The adapter paces admissions at one per 1.1 seconds and limits status reads
+to 480 per minute, below the documented 600-read limit. A full run therefore takes
+several hours. `evaluate_giggy.py` runs, scores, and reports all fourteen prepared
+datasets in sequence and writes resumable progress under `results/reports/`.
+
+`results/giggy_evaluation.json` collects the English sets, the ten existing
+200-clip FLEURS language samples, coverage, 95% confidence intervals, returned
+model revisions, and isolated STT latency. Pricing uses the actual credits
+deducted per clip, including per-request rounding, converted at the published
+Pro/Studio/Scale denomination ($10 per million credits). The key was funded with
+evaluation credits; the dollar figure is a retail-equivalent estimate, not an
+invoice. TTS timing lives separately in Verli's `benchmarks/tts-latency/`.
+With the benchmark requirements installed, run the offline contract and resume
+tests with `./.venv/bin/python -m pip install pytest` followed by
+`./.venv/bin/python -m pytest -q tests/test_giggy.py`.
+
+References: [Speech API](https://giggy.ai/docs/speech-api),
+[OpenAPI](https://giggy.ai/v1/openapi.json), [pricing](https://giggy.ai/pricing).
+
 | Cloud engine | Clean WER (LibriSpeech) | Hard WER (Earnings-22) |
 |--------------|-----------------------:|-----------------------:|
 | OpenAI gpt-4o-transcribe  | 1.47 | 18.55 |

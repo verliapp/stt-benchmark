@@ -1,0 +1,21 @@
+{
+  "config": "fleurs_ko_kr",
+  "note": "cost is an estimate from audio duration x published rate (pricing.json); latency is isolated (measure_latency.py); throughput is under bulk concurrency, not a clean per-call number.",
+  "rows": [
+    {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 10.99,
+      "ci95": [
+        9.25,
+        12.81
+      ],
+      "missing": 0,
+      "cost_usd": 0.0287,
+      "cost_per_audio_hour": 0.0413,
+      "latency_median_s": 4.511,
+      "latency_p90_s": 6.675,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 11.1
+    }
+  ]
+}

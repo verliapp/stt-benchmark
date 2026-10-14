@@ -117,6 +117,20 @@
       "wallSeconds": 75
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 5.58,
+      "ci95": [
+        4.2,
+        6.97
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 4857,
+      "wallSeconds": 224
+    },
+    {
       "engine": "fish-audio-asr",
       "werPercent": 5.62,
       "ci95": [

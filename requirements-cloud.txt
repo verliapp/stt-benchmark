@@ -1,13 +1,14 @@
 # Extra deps for the 19-provider cloud benchmark (run_cloud_engines.py).
 # REST providers (deepgram, assemblyai, soniox, speechmatics, gladia, elevenlabs,
-# openai, groq, rev, azure) need only `requests`, already in requirements.txt.
+# openai, groq, rev, azure) use `requests`; Giggy also uses soundfile and scipy.
+requests>=2.31
 # The two SDK-only providers:
 amazon-transcribe>=0.6.2      # Amazon Transcribe streaming (per-clip)
 google-cloud-speech>=2.27.0   # Google Cloud Speech-to-Text V2 (recognize)
 
 # Real-time streaming adapters (streaming_adapters.py) talk WebSocket.
 websockets>=13
-# scipy resamples 16 kHz clips to 24 kHz for OpenAI Realtime (rejects < 24 kHz).
+# scipy resamples clips for OpenAI Realtime (24 kHz) and Giggy (16 kHz).
 scipy>=1.11
 # Azure realtime streaming uses the Speech SDK (continuous recognition).
 azure-cognitiveservices-speech>=1.40

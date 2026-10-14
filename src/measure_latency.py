@@ -14,6 +14,7 @@ size, and sync-vs-async label (async = submit + poll, so its latency includes jo
 queue turnaround and our poll cadence, and is not comparable to a sync request).
 """
 import json
+import datetime
 import os
 import sys
 import time
@@ -23,7 +24,7 @@ from cloud_adapters import PROVIDERS
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # providers that submit a job then poll for the result (latency includes queue + poll)
-ASYNC = {"assemblyai", "soniox", "speechmatics", "gladia", "rev", "resemble"}
+ASYNC = {"assemblyai", "soniox", "speechmatics", "gladia", "rev", "resemble", "giggy"}
 
 
 def pct(vals, p):
@@ -48,6 +49,7 @@ def has_key(key):
         "grok": "XAI_API_KEY", "fish": "FISH_API_KEY", "rev": "REV_API_KEY",
         "cartesia": "CARTESIA_API_KEY", "inworld": "INWORLD_API_KEY",
         "resemble": "RESEMBLE_API_KEY",
+        "giggy": "GIGGY_API_KEY",
         "azure": "AZURE_SPEECH_KEY", "google": "GCP_PROJECT",
         "amazon": "AWS_ACCESS_KEY_ID",
     }
@@ -96,6 +98,9 @@ def main():
                 "median_s": pct(times, 50), "mean_s": round(sum(times) / len(times), 3),
                 "p90_s": pct(times, 90), "min_s": round(min(times), 3),
                 "max_s": round(max(times), 3), "config": cfg,
+                **({"measured_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "api_mode": "fast", "poll_interval_s": 1.5}
+                   if key == "giggy" else {}),
             }
             print(f"{cfgp['engine']:26} median={out[cfgp['engine']]['median_s']}s "
                   f"p90={out[cfgp['engine']]['p90_s']}s ({out[cfgp['engine']]['mode']}, "

@@ -1,0 +1,21 @@
+{
+  "config": "ami",
+  "note": "cost is an estimate from audio duration x published rate (pricing.json); latency is isolated (measure_latency.py); throughput is under bulk concurrency, not a clean per-call number.",
+  "rows": [
+    {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 10.41,
+      "ci95": [
+        10.08,
+        10.74
+      ],
+      "missing": 2663,
+      "cost_usd": 0.3845,
+      "cost_per_audio_hour": 0.0456,
+      "latency_median_s": 4.511,
+      "latency_p90_s": 6.675,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 2.7
+    }
+  ]
+}

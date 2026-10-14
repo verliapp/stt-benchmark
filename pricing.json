@@ -2,6 +2,15 @@
   "_note": "Pricing basis for cost estimates in report.py. Rates are the pay-as-you-go pre-recorded/batch tier we actually call, in USD per audio-hour unless unit says otherwise, dated 2026-07-15 and consistent with blog part one. Cost cannot be read back from most provider APIs, so report.py estimates it from audio duration processed (from _meta.json) times these rates, applying min_seconds_per_job where a per-job minimum inflates short-clip cost. 'path' flags where the API we use is priced differently from the provider's cheapest tier.",
   "as_of": "2026-07-15",
   "providers": {
+    "giggy-free-stt-v1": {
+      "unit": "per_credit",
+      "usd_per_credit": 0.00001,
+      "credits_per_audio_hour": 4000,
+      "as_of": "2026-10-13",
+      "source": "https://giggy.ai/pricing",
+      "path": "fast-recording",
+      "note": "Fast is 4000 credits/hour with ceil(duration_ms * 4000 / 3600000) per request. Estimate USD from the actual creditsDeducted recorded in _meta.json at Pro/Studio/Scale's $10 per million credits. This evaluation uses vendor-granted credits, not an invoice. Nominal $0.04/hour can understate short-clip rounding."
+    },
     "deepgram-nova-3": {
       "unit": "per_audio_hour",
       "rate_usd": 0.46,

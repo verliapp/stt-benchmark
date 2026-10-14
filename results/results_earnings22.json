@@ -31,6 +31,20 @@
       "wallSeconds": 471
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 10.14,
+      "ci95": [
+        9.72,
+        10.58
+      ],
+      "missing": 89,
+      "scored": 2652,
+      "coveragePercent": 96.8,
+      "utterances": 2741,
+      "refWords": 48725,
+      "wallSeconds": 7238
+    },
+    {
       "engine": "fish-audio-asr",
       "werPercent": 10.27,
       "ci95": [
@@ -324,5 +338,7 @@
       "refWords": 48899,
       "wallSeconds": 683
     }
-  ]
+  ],
+  "metric": "WER",
+  "mode": "word_en"
 }

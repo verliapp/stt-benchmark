@@ -20,7 +20,7 @@ import sys
 import threading
 import time
 
-from cloud_adapters import PROVIDERS, TranscribeError, normalize_language, supports_language
+from cloud_adapters import PROVIDERS, TranscribeError, NonRetryableTranscribeError, normalize_language, supports_language
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RETRIES = 3
@@ -62,10 +62,12 @@ def transcribe_one(fn, cfg, wav, out_path):
         try:
             text = fn(wav, cfg)
             with open(out_path, "w") as fh:
-                json.dump({"text": text}, fh)
+                json.dump({"text": text, **getattr(text, "metadata", {})}, fh)
             return True, None
         except Exception as e:  # noqa: BLE001 - record and let the driver count it
             last = e
+            if isinstance(e, NonRetryableTranscribeError):
+                break
             time.sleep(1.5 * (attempt + 1))
     return False, f"{type(last).__name__}: {str(last)[:200]}"
 
@@ -115,6 +117,8 @@ def run_provider(key, cfg, refs, audio_dir, reports, total_audio):
     engine = cfg["engine"]
     rdir = os.path.join(reports, engine)
     os.makedirs(rdir, exist_ok=True)
+    if key == "giggy":
+        cfg = {**cfg, "job_dir": os.path.join(rdir, ".jobs")}
     meta_path = os.path.join(rdir, "_meta.json")
     meta = {}
     if os.path.exists(meta_path):
@@ -159,9 +163,27 @@ def run_provider(key, cfg, refs, audio_dir, reports, total_audio):
     missing = sum(1 for uid in refs
                   if not os.path.exists(os.path.join(rdir, f"{uid}.json"))
                   or os.path.getsize(os.path.join(rdir, f"{uid}.json")) == 0)
+    final_meta = {"audioSeconds": round(total_audio), "wallSeconds": round(wall),
+                  "missing": missing, "language": cfg["lang"]}
+    if key == "giggy":
+        final_meta["wallSeconds"] = round(wall + meta.get("wallSeconds", 0)) if todo else meta.get("wallSeconds", round(wall))
+        if meta.get("interruptedWallSecondsEstimated"):
+            final_meta["interruptedWallSecondsEstimated"] = True
+        clips = [json.load(open(os.path.join(rdir, f"{uid}.json"))) for uid in refs
+                 if os.path.exists(os.path.join(rdir, f"{uid}.json"))]
+        final_meta.update({
+            "inputAudioSeconds": round(total_audio),
+            "audioSeconds": sum(c.get("audio_duration_ms", 0) for c in clips) / 1000,
+            "creditsDeducted": sum(c.get("credits_deducted") or 0 for c in clips),
+            "mode": "fast", "advertisedModel": cfg["model"],
+            "models": sorted({c["model"] for c in clips if c.get("model")}),
+            "modelRevisions": sorted({c["model_revision"] for c in clips if c.get("model_revision")}),
+            "sourceCommits": sorted({c["source_commit"] for c in clips if c.get("source_commit")}),
+        })
+        with open(os.path.join(rdir, ".errors.json"), "w", encoding="utf-8") as fh:
+            json.dump(dict(errors), fh, indent=2)
     with open(meta_path, "w", encoding="utf-8") as fh:
-        json.dump({"audioSeconds": round(total_audio), "wallSeconds": round(wall),
-                   "missing": missing, "language": cfg["lang"]}, fh, indent=2)
+        json.dump(final_meta, fh, indent=2)
     print(f"[{key}] finished: {len(refs) - missing}/{len(refs)} transcribed, "
           f"missing={missing}, wall={round(wall)}s", flush=True)
     if errors:

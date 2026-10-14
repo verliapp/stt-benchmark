@@ -159,6 +159,20 @@
       "wallSeconds": 678
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 5.72,
+      "ci95": [
+        4.85,
+        6.63
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 9893,
+      "wallSeconds": 225
+    },
+    {
       "engine": "deepgram-nova-3",
       "werPercent": 5.8,
       "ci95": [

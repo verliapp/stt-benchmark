@@ -214,5 +214,20 @@
     "min_s": 0.602,
     "max_s": 3.632,
     "config": "librispeech"
+  },
+  "giggy-free-stt-v1": {
+    "provider": "giggy",
+    "mode": "async",
+    "n": 40,
+    "errors": 0,
+    "median_s": 4.511,
+    "mean_s": 5.148,
+    "p90_s": 6.675,
+    "min_s": 3.983,
+    "max_s": 11.604,
+    "config": "librispeech",
+    "measured_at": "2026-10-13T23:27:25.772523+00:00",
+    "api_mode": "fast",
+    "poll_interval_s": 1.5
   }
 }

@@ -21,11 +21,14 @@ REST providers use `requests` only. AWS/Azure/Google use their SDKs, imported
 lazily so the REST providers never need them installed.
 """
 import collections
+import hashlib
 import io
 import json
 import os
 import threading
 import time
+import uuid
+from pathlib import Path
 
 import requests
 
@@ -39,6 +42,26 @@ POLL_MAX = 600  # give up on one clip after this many seconds
 GROQ_RPM = 18
 _groq_lock = threading.Lock()
 _groq_calls = collections.deque()
+
+# Giggy read endpoints allow 600 requests/minute. The live STT upload endpoint
+# returns RateLimit-Limit: 60 even in Fast mode. Leave headroom for both limits.
+_giggy_read_lock = threading.Lock()
+_giggy_next_read = 0.0
+_giggy_post_lock = threading.Lock()
+_giggy_next_post = 0.0
+
+
+def _giggy_pace(read=True):
+    global _giggy_next_read, _giggy_next_post
+    lock = _giggy_read_lock if read else _giggy_post_lock
+    with lock:
+        now = time.monotonic()
+        scheduled = max(now, _giggy_next_read if read else _giggy_next_post)
+        if read:
+            _giggy_next_read = scheduled + 0.125  # 480 reads/minute
+        else:
+            _giggy_next_post = scheduled + 1.1  # fewer than 60 STT uploads/minute
+    time.sleep(max(0, scheduled - now))
 
 
 def _groq_throttle():
@@ -56,6 +79,19 @@ def _groq_throttle():
 
 class TranscribeError(RuntimeError):
     """Raised when a provider fails a clip; the driver counts it as missing."""
+
+
+class NonRetryableTranscribeError(TranscribeError):
+    """Deterministic input rejection or an upload that must not be replayed."""
+
+
+class Transcript(str):
+    """Raw text with optional provider provenance for the saved clip report."""
+
+    def __new__(cls, text, metadata):
+        obj = super().__new__(cls, text)
+        obj.metadata = metadata
+        return obj
 
 
 def _env(name, default=None, required=True):
@@ -151,6 +187,139 @@ def _poll(get_status, is_done, is_error):
 
 
 # --- Synchronous REST providers -------------------------------------------------
+
+def _giggy_audio(wav):
+    """Convert locally to Giggy's PCM16 mono 16 kHz contract; never pad clips."""
+    import math
+    import soundfile as sf
+
+    audio, sr = sf.read(wav, dtype="float64")
+    if len(audio) / sr < 0.5:
+        raise NonRetryableTranscribeError("giggy: recording is below the 0.5-second minimum")
+    if len(audio) / sr > 12 * 3600:
+        raise NonRetryableTranscribeError("giggy: recording exceeds the 12-hour Fast limit")
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+    if sr != 16000:
+        from scipy.signal import resample_poly
+        divisor = math.gcd(sr, 16000)
+        audio = resample_poly(audio, 16000 // divisor, sr // divisor)
+    buffer = io.BytesIO()
+    sf.write(buffer, audio, 16000, format="WAV", subtype="PCM_16")
+    return buffer.getvalue()
+
+
+def _giggy_json(response, operation):
+    # requests.HTTPError includes the URL. In particular, never log a signed
+    # transcript URL through the driver's exception reporting.
+    if not 200 <= response.status_code < 300:
+        raise TranscribeError(f"giggy: {operation} HTTP {response.status_code}")
+    return response.json()
+
+
+def giggy(wav, cfg):
+    """Fast recording API: submit once, poll durable status, download final text.
+
+    Save admission UUIDs separately from transcripts so a harness retry or restart
+    resumes the same job. An upload with an ambiguous outcome is never replayed:
+    production does not reliably honor client_request_id as an idempotency key.
+    The signed artifact request is separate and carries no API credential.
+    """
+    key = _env("GIGGY_API_KEY")
+    language = provider_language(cfg)
+    audio = _giggy_audio(wav)
+    fingerprint = hashlib.sha256(audio + language.encode() + b"fast").hexdigest()
+    state_path = None
+    state = {}
+    if cfg.get("job_dir"):
+        state_path = Path(cfg["job_dir"]) / (Path(wav).stem + ".json")
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        if state_path.exists():
+            state = json.loads(state_path.read_text())
+            if state.get("fingerprint") != fingerprint:
+                raise NonRetryableTranscribeError("giggy: saved admission uses different audio or language")
+
+    def save_state():
+        if state_path is not None:
+            temp = state_path.with_suffix(".tmp")
+            temp.write_text(json.dumps(state))
+            temp.replace(state_path)
+
+    if state.get("admission_pending") and not state.get("generation_uuid"):
+        raise NonRetryableTranscribeError("giggy: ambiguous admission; reconcile History before resubmitting")
+
+    headers = {"xi-api-key": key}
+    with requests.Session() as session:
+        if not state.get("generation_uuid"):
+            _giggy_pace(read=False)
+            state = {"fingerprint": fingerprint, "admission_pending": True,
+                     "client_request_id": str(uuid.uuid4())}
+            save_state()
+            r = session.post(
+                "https://giggy.ai/v1/audio/transcriptions",
+                params={"mode": "fast", "language": language,
+                        "client_request_id": state["client_request_id"]},
+                headers={**headers, "Content-Type": "audio/wav"},
+                data=audio, timeout=TIMEOUT,
+            )
+            if r.status_code in {400, 401, 402, 403, 409, 413, 429}:
+                # Explicitly rejected admission is safe for the driver to retry.
+                state["admission_pending"] = False
+                state["last_rejection_http"] = r.status_code
+                state["retry_after"] = r.headers.get("Retry-After")
+                save_state()
+                if r.status_code == 429:
+                    time.sleep(min(float(r.headers.get("Retry-After", 5)), 60))
+            envelope = _giggy_json(r, "admission")
+            generation = envelope.get("generation", {})
+            gid = generation.get("generation_uuid")
+            try:
+                uuid.UUID(gid)
+            except (ValueError, TypeError, AttributeError) as e:
+                raise TranscribeError("giggy: admission did not return a generation UUID") from e
+            state.update({"generation_uuid": gid, "admission_pending": False})
+            save_state()
+
+        gid = state["generation_uuid"]
+        deadline = time.monotonic() + POLL_MAX
+        time.sleep(POLL_EVERY)  # allow short clips to finish before the first read
+        while True:
+            if time.monotonic() >= deadline:
+                raise TranscribeError(f"giggy: generation {gid} timed out; saved for resume")
+            _giggy_pace()
+            r = session.get(f"https://giggy.ai/v1/generations/{gid}",
+                            headers=headers,
+                            timeout=min(TIMEOUT, max(1, deadline - time.monotonic())))
+            if r.status_code == 429:
+                time.sleep(min(float(r.headers.get("Retry-After", 5)), 60))
+                continue
+            generation = _giggy_json(r, "status").get("generation", {})
+            status = generation.get("status")
+            if status in {"failed", "cancelled", "admission_failed"}:
+                raise NonRetryableTranscribeError(f"giggy: generation {gid} ended with {status}")
+            if status == "completed":
+                break
+            if status not in {"queued", "processing"}:
+                raise TranscribeError(f"giggy: unexpected generation status {status!r}")
+            time.sleep(POLL_EVERY)
+
+    result_url = (generation.get("result") or {}).get("url")
+    if not isinstance(result_url, str) or not result_url.startswith("https://"):
+        raise TranscribeError("giggy: completed transcript has no HTTPS result URL")
+    # Never forward xi-api-key to the signed artifact host.
+    try:
+        response = requests.get(result_url, timeout=TIMEOUT)
+    except requests.RequestException as e:
+        raise TranscribeError(f"giggy: transcript download {type(e).__name__}") from e
+    result = _giggy_json(response, "transcript download")
+    if not isinstance(result.get("text"), str):
+        raise TranscribeError("giggy: final transcript is missing a text string")
+    metadata = {k: result[k] for k in
+                ("model", "model_revision", "source_commit", "languages", "audio_duration_ms")
+                if k in result}
+    metadata.update({"generation_uuid": gid, "mode": "fast",
+                     "credits_deducted": generation.get("credits_deducted")})
+    return Transcript(result["text"], metadata)
 
 def deepgram(wav, cfg):
     model = _env("DEEPGRAM_MODEL", cfg["model"], required=False)
@@ -649,6 +818,7 @@ def amazon(wav, cfg):
 # model id (env-overridable); workers = safe concurrency for that provider's limits.
 
 PROVIDERS = {
+    "giggy":        {"engine": "giggy-free-stt-v1",         "model": "Giggy Free STT v1",      "fn": giggy,        "workers": 8,  "languages": LANG_BARE},
     "deepgram":     {"engine": "deepgram-nova-3",           "model": "nova-3",                 "fn": deepgram,     "workers": 12, "languages": LANG_DEEPGRAM},
     "assemblyai":   {"engine": "assemblyai-universal",      "model": "universal-3-5-pro",      "fn": assemblyai,   "workers": 12, "languages": LANG_ASSEMBLYAI},
     "soniox":       {"engine": "soniox",                    "model": "stt-async-preview",      "fn": soniox,       "workers": 2,  "languages": LANG_BARE},

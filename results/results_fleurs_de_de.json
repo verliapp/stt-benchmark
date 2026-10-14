@@ -75,6 +75,20 @@
       "wallSeconds": 32
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 4.78,
+      "ci95": [
+        3.67,
+        6.08
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 4222,
+      "wallSeconds": 225
+    },
+    {
       "engine": "lemonfox-whisper",
       "werPercent": 4.86,
       "ci95": [

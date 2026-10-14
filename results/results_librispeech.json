@@ -45,6 +45,20 @@
       "wallSeconds": 1367
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 1.67,
+      "ci95": [
+        1.51,
+        1.83
+      ],
+      "missing": 0,
+      "scored": 2620,
+      "coveragePercent": 100.0,
+      "utterances": 2620,
+      "refWords": 53027,
+      "wallSeconds": 5843
+    },
+    {
       "engine": "inworld-stt-1",
       "werPercent": 1.71,
       "ci95": [
@@ -254,5 +268,7 @@
       "refWords": 52871,
       "wallSeconds": 6650
     }
-  ]
+  ],
+  "metric": "WER",
+  "mode": "word_en"
 }

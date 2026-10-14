@@ -89,6 +89,20 @@
       "wallSeconds": 66
     },
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 10.99,
+      "ci95": [
+        9.25,
+        12.81
+      ],
+      "missing": 0,
+      "scored": 200,
+      "coveragePercent": 100.0,
+      "utterances": 200,
+      "refWords": 2921,
+      "wallSeconds": 225
+    },
+    {
       "engine": "inworld-stt-1",
       "werPercent": 12.63,
       "ci95": [

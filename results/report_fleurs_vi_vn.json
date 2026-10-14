@@ -1,0 +1,21 @@
+{
+  "config": "fleurs_vi_vn",
+  "note": "cost is an estimate from audio duration x published rate (pricing.json); latency is isolated (measure_latency.py); throughput is under bulk concurrency, not a clean per-call number.",
+  "rows": [
+    {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 7.76,
+      "ci95": [
+        6.46,
+        9.19
+      ],
+      "missing": 0,
+      "cost_usd": 0.0295,
+      "cost_per_audio_hour": 0.0412,
+      "latency_median_s": 4.511,
+      "latency_p90_s": 6.675,
+      "latency_mode": "async",
+      "throughput_xrt_bulk": 11.4
+    }
+  ]
+}

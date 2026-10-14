@@ -50,6 +50,9 @@ def cost_for(engine, meta, pricing, rdir):
     if not p or not meta:
         return None
     audio_s = meta.get("audioSeconds", 0)
+    if p["unit"] == "per_credit":
+        credits = meta.get("creditsDeducted")
+        return round(credits * p["usd_per_credit"], 4) if credits is not None else None
     if p["unit"] == "per_audio_hour":
         billed_s = audio_s
         if p.get("min_seconds_per_job"):
@@ -65,15 +68,24 @@ def cost_for(engine, meta, pricing, rdir):
 
 def main():
     cfg = sys.argv[1] if len(sys.argv) > 1 else "librispeech"
+    selected = None
+    if len(sys.argv) > 2:
+        if len(sys.argv) != 4 or sys.argv[2] != "--engine":
+            sys.exit("usage: python report.py <config> [--engine ENGINE]")
+        selected = sys.argv[3]
     pricing = load_json(os.path.join(ROOT, "pricing.json"))
     latency = load_json(os.path.join(ROOT, "results", "latency.json"), {})
     scored = load_json(os.path.join(ROOT, "results", f"results_{cfg}.json"), {})
     wer_by = {r["engine"]: r for r in scored.get("results", [])}
     reports = os.path.join(ROOT, "results", "reports", cfg)
 
-    rows = []
+    out_path = os.path.join(ROOT, "results", f"report_{cfg}.json")
+    existing = load_json(out_path, {}) if selected else {}
+    rows = [r for r in existing.get("rows", []) if r["engine"] != selected]
     for rdir in sorted(glob.glob(f"{reports}/*/")):
         engine = os.path.basename(os.path.dirname(rdir))
+        if selected and engine != selected:
+            continue
         meta = load_json(os.path.join(rdir, "_meta.json"))
         w = wer_by.get(engine, {})
         lat = latency.get(engine, {})
@@ -99,7 +111,7 @@ def main():
     out = {"config": cfg, "note": "cost is an estimate from audio duration x published "
            "rate (pricing.json); latency is isolated (measure_latency.py); throughput "
            "is under bulk concurrency, not a clean per-call number.", "rows": rows}
-    json.dump(out, open(os.path.join(ROOT, "results", f"report_{cfg}.json"), "w"), indent=2)
+    json.dump(out, open(out_path, "w"), indent=2)
 
     print(f"\n{cfg}\n")
     hdr = f"{'engine':26}{'WER%':>7}{'95% CI':>15}{'cost$':>9}{'$/hr':>7}{'lat med':>9}{'xRT':>7}"

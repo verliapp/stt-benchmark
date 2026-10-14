@@ -40,11 +40,16 @@ def main():
     cfg = sys.argv[1]
     mode = default_mode(cfg)
     rest = sys.argv[2:]
-    if rest:
-        if len(rest) != 2 or rest[0] != "--mode":
+    selected = None
+    while rest:
+        if len(rest) < 2 or rest[0] not in {"--mode", "--engine"}:
             sys.exit("usage: python score_ood.py <config> "
-                     "[--mode word_en|word_basic|cer]")
-        mode = rest[1]
+                     "[--mode word_en|word_basic|cer] [--engine ENGINE]")
+        if rest[0] == "--mode":
+            mode = rest[1]
+        else:
+            selected = rest[1]
+        rest = rest[2:]
     if mode not in MODES:
         sys.exit(f"unknown mode {mode!r}; choose from {sorted(MODES)}")
     metric = "CER" if mode == "cer" else "WER"
@@ -55,10 +60,18 @@ def main():
 
     engines = sorted(os.path.basename(os.path.dirname(p))
                      for p in glob.glob(f"{reports}/*/"))
+    summary_path = f"{ROOT}/results/results_{cfg}.json"
+    existing = {}
+    if selected:
+        engines = [e for e in engines if e == selected]
+        if os.path.exists(summary_path):
+            existing = json.load(open(summary_path))
+            if existing.get("mode", "word_en") != mode or existing.get("utterances") != len(refs):
+                sys.exit("existing summary uses a different metric or dataset; refusing to merge")
     if not engines:
         sys.exit(f"no engine reports under {reports}; run run_ood_engines.py {cfg} first")
 
-    rows = []
+    rows = [r for r in existing.get("results", []) if r["engine"] != selected]
     for engine in engines:
         rdir = f"{reports}/{engine}"
         # Score each engine only on the clips it actually returned. A clip the
@@ -91,13 +104,15 @@ def main():
             json.dump(hyps, fh)
 
     rows.sort(key=lambda r: r["werPercent"])
-    json.dump({"config": cfg, "utterances": len(refs), "metric": metric,
+    json.dump({**existing, "config": cfg, "utterances": len(refs), "metric": metric,
                "mode": mode, "results": rows},
-              open(f"{ROOT}/results/results_{cfg}.json", "w"), indent=2)
+              open(summary_path, "w"), indent=2)
 
     print(f"\n{cfg}  ({len(refs)} utterances, mode={mode})\n")
     print(f"{'engine':30}{metric + '%':>8}{'95% CI':>16}{'scored':>8}{'cov%':>7}")
     for r in rows:
+        if selected and r["engine"] != selected:
+            continue  # preserved historical rows may predate coverage fields
         ci = f"{r['ci95'][0]:.2f}-{r['ci95'][1]:.2f}"
         print(f"{r['engine']:30}{r['werPercent']:>8.2f}{ci:>16}"
               f"{r['scored']:>8}{r['coveragePercent']:>7.1f}")

@@ -3,6 +3,20 @@
   "utterances": 12542,
   "results": [
     {
+      "engine": "giggy-free-stt-v1",
+      "werPercent": 10.41,
+      "ci95": [
+        10.08,
+        10.74
+      ],
+      "missing": 2663,
+      "scored": 9879,
+      "coveragePercent": 78.8,
+      "utterances": 12542,
+      "refWords": 87121,
+      "wallSeconds": 11370
+    },
+    {
       "engine": "parakeet-v3",
       "werPercent": 11.43,
       "ci95": [
@@ -62,5 +76,7 @@
       "refWords": 89490,
       "wallSeconds": null
     }
-  ]
+  ],
+  "metric": "WER",
+  "mode": "word_en"
 }
