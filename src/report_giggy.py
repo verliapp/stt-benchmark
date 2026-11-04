@@ -40,7 +40,7 @@ def main():
     out = {
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "engine": ENGINE, "mode": "fast", "advertised_model": "Giggy Free STT v1",
-        "model_note": "Vendor email described an own model; canonical transcript artifacts identify Qwen/Qwen3-ASR-1.7B. Record actual revisions per dataset.",
+        "model_note": "Giggy identifies the model as Giggy Free STT v1 and says it is their own. The underlying model identity has not been independently verified. Model, revision, and worker source fields in saved artifacts are response-reported provenance, preserved unchanged; they are not independent verification of model architecture.",
         "sources": ["https://giggy.ai/docs/speech-api", "https://giggy.ai/v1/openapi.json",
                     "https://giggy.ai/pricing"],
         "methodology": {
