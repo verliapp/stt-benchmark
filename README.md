@@ -62,11 +62,16 @@ adapter locally resamples other input sample rates, leaves the dataset files
 unchanged, and reports recordings shorter than the provider's 0.5-second minimum
 as coverage gaps without padding them.
 
-The vendor's email calls the model **Giggy Free STT v1** and says it is their own.
-The public docs and verified transcript artifacts instead identify
-**Qwen/Qwen3-ASR-1.7B**. Every saved clip includes the actual model, revision, and
-worker source commit. Report that distinction when citing the results; the API
-does not offer a selectable STT model parameter.
+The vendor identifies the model as **Giggy Free STT v1**. During the October
+13–14, 2026 evaluation, downloaded transcript JSON reported the model field as
+`Qwen/Qwen3-ASR-1.7B`, along with revision and worker source fields. On November
+4, Giggy attributed that label to a naming flag left over from benchmarking
+other models on shared infrastructure and described Giggy STT as a standalone
+model. We have not independently verified the underlying model architecture or
+that explanation. The saved fields record what the API returned; they do not
+independently establish model identity. Raw metadata and measured results are
+preserved unchanged. Cite these results as **Giggy Free STT v1** via the Fast
+recording API; the API does not offer a selectable STT model parameter.
 
 ```bash
 # GIGGY_API_KEY belongs only in the gitignored .env.providers.
