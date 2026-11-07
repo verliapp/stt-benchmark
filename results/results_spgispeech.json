@@ -74,17 +74,17 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 2.66,
+      "werPercent": 2.72,
       "ci95": [
-        2.45,
-        2.9
+        2.49,
+        2.97
       ],
       "missing": 0,
       "scored": 1200,
       "coveragePercent": 100.0,
       "utterances": 1200,
       "refWords": 29400,
-      "wallSeconds": 1323
+      "wallSeconds": 1322
     },
     {
       "engine": "deepgram-nova-3",

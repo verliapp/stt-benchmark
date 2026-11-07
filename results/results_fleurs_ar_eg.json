@@ -118,17 +118,17 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 16.64,
+      "werPercent": 18.42,
       "ci95": [
-        14.31,
-        19.26
+        15.88,
+        21.05
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 3805,
-      "wallSeconds": 225
+      "wallSeconds": 224
     },
     {
       "engine": "gladia-solaria",

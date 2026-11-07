@@ -146,17 +146,17 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 8.25,
+      "werPercent": 10.45,
       "ci95": [
-        6.6,
-        9.85
+        8.75,
+        12.31
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 3771,
-      "wallSeconds": 223
+      "wallSeconds": 222
     },
     {
       "engine": "grok-stt",

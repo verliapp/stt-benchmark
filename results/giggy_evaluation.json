@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-14T07:36:50.113922+00:00",
+  "generated_at": "2026-11-07T00:56:02.457982+00:00",
   "engine": "giggy-free-stt-v1",
   "mode": "fast",
   "advertised_model": "Giggy Free STT v1",
-  "model_note": "Giggy identifies the model as Giggy Free STT v1. During the October 13–14, 2026 evaluation, downloaded transcript JSON reported Qwen/Qwen3-ASR-1.7B in its model field. On November 4, Giggy attributed that label to a naming flag left over from benchmarking other models on shared infrastructure and described Giggy STT as a standalone model. Neither the underlying model architecture nor that explanation has been independently verified. Saved response fields and measured results are preserved unchanged; the fields record API-reported provenance, not independent verification of model identity.",
+  "model_note": "Giggy identifies the service as Giggy Free STT v1 and describes it as its own standalone model. API model, revision and source fields record returned metadata, not independent verification of model architecture.",
   "sources": [
     "https://giggy.ai/docs/speech-api",
     "https://giggy.ai/v1/openapi.json",
@@ -15,7 +15,7 @@
     "coverage": "Missing results excluded from accuracy and counted separately. Empty returned transcripts count as deletions. Clips below 0.5 seconds rejected locally, never padded.",
     "preprocessing": "Mono PCM16 at 16 kHz, polyphase resampling only when required; original dataset audio preserved.",
     "comparison": "Other providers' results are historical snapshots. Compare on mutually returned clips before claiming a statistically significant win.",
-    "cost": "Vendor-granted evaluation credits. USD is a retail-equivalent estimate at $10/million credits, including actual per-request credit rounding; not an invoice.",
+    "cost": "Vendor-granted evaluation credits. USD is a retail-equivalent estimate at $10/million credits, including per-request rounding; not an invoice. Dataset totals count returned accuracy clips only; latency, diagnostics and unresolved admissions are reported separately.",
     "packages": {
       "openai-whisper": "20250625",
       "numpy": "2.5.4",
@@ -30,39 +30,40 @@
       "metric": "WER",
       "normalization": "word_en",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 10.41,
+      "werPercent": 10.37,
       "ci95": [
-        10.08,
-        10.74
+        10.07,
+        10.68
       ],
-      "missing": 2663,
-      "scored": 9879,
+      "missing": 2664,
+      "scored": 9878,
       "coveragePercent": 78.8,
       "utterances": 12542,
       "refWords": 87121,
-      "wallSeconds": 11370,
+      "wallSeconds": 10893,
       "provenance": {
-        "audioSeconds": 30358.753,
-        "wallSeconds": 11370,
-        "missing": 2663,
+        "audioSeconds": 30357.033,
+        "wallSeconds": 10893,
+        "missing": 2664,
         "language": "en",
         "inputAudioSeconds": 31242,
-        "creditsDeducted": 38448,
+        "creditsDeducted": 38446,
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "b47dc3931e2eb8d59be2bbc8fa31cd9fd068a2dddcf9c9f598e918a50e3dd7f3",
       "missing_reasons": {
-        "NonRetryableTranscribeError: giggy: recording is below the 0.5-second minimum": 2663
+        "NonRetryableTranscribeError: giggy: recording is below the 0.5-second minimum": 2663,
+        "NonRetryableTranscribeError: giggy: generation ended with failed": 1
       },
       "retail_equivalent_usd": 0.3845
     },
@@ -71,35 +72,34 @@
       "metric": "WER",
       "normalization": "word_en",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 10.14,
+      "werPercent": 10.06,
       "ci95": [
-        9.72,
-        10.58
+        9.62,
+        10.52
       ],
       "missing": 89,
       "scored": 2652,
       "coveragePercent": 96.8,
       "utterances": 2741,
       "refWords": 48725,
-      "wallSeconds": 7238,
+      "wallSeconds": 2920,
       "provenance": {
         "audioSeconds": 19506.887,
-        "wallSeconds": 7238,
+        "wallSeconds": 2920,
         "missing": 89,
         "language": "en",
-        "interruptedWallSecondsEstimated": true,
         "inputAudioSeconds": 19539,
         "creditsDeducted": 22994,
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "6d44b84430f0883d7827289a0f35245015e34d6994194c9819a77c9ace8a32f4",
@@ -113,20 +113,20 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 16.64,
+      "werPercent": 18.42,
       "ci95": [
-        14.31,
-        19.26
+        15.88,
+        21.05
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 3805,
-      "wallSeconds": 225,
+      "wallSeconds": 224,
       "provenance": {
         "audioSeconds": 2246.484,
-        "wallSeconds": 225,
+        "wallSeconds": 224,
         "missing": 0,
         "language": "ar",
         "inputAudioSeconds": 2246,
@@ -134,13 +134,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "ecdb3d98c48e0b14eea28c56b60b7afba3ab1c0c0035df419d4be38d7603fcf8",
@@ -152,20 +152,20 @@
       "metric": "CER",
       "normalization": "cer",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 4.89,
+      "werPercent": 6.4,
       "ci95": [
-        3.77,
-        6.02
+        5.01,
+        7.73
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 7438,
-      "wallSeconds": 225,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2354.46,
-        "wallSeconds": 225,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "zh",
         "inputAudioSeconds": 2354,
@@ -173,13 +173,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "a6c98425a83284a347312920041a24e8591f146b6feb107ce7e1a1911fe6aae0",
@@ -191,98 +191,102 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 4.78,
+      "werPercent": 8.0,
       "ci95": [
-        3.67,
-        6.08
+        6.16,
+        9.92
       ],
-      "missing": 0,
-      "scored": 200,
-      "coveragePercent": 100.0,
+      "missing": 1,
+      "scored": 199,
+      "coveragePercent": 99.5,
       "utterances": 200,
-      "refWords": 4222,
-      "wallSeconds": 225,
+      "refWords": 4173,
+      "wallSeconds": 338,
       "provenance": {
-        "audioSeconds": 2484.84,
-        "wallSeconds": 225,
-        "missing": 0,
+        "audioSeconds": 2448.42,
+        "wallSeconds": 338,
+        "missing": 1,
         "language": "de",
         "inputAudioSeconds": 2485,
-        "creditsDeducted": 2850,
+        "creditsDeducted": 2809,
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "5dee3f2bce8f8a21392f2e6d1d6b7c27c376f131fe66f7ea9b4fe63d5db1689b",
-      "missing_reasons": {},
-      "retail_equivalent_usd": 0.0285
+      "missing_reasons": {
+        "NonRetryableTranscribeError: giggy: generation ended with failed": 1
+      },
+      "retail_equivalent_usd": 0.0281
     },
     {
       "config": "fleurs_es_419",
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 5.58,
+      "werPercent": 6.64,
       "ci95": [
-        4.2,
-        6.97
+        5.04,
+        8.37
       ],
-      "missing": 0,
-      "scored": 200,
-      "coveragePercent": 100.0,
+      "missing": 1,
+      "scored": 199,
+      "coveragePercent": 99.5,
       "utterances": 200,
-      "refWords": 4857,
-      "wallSeconds": 224,
+      "refWords": 4831,
+      "wallSeconds": 313,
       "provenance": {
-        "audioSeconds": 2368.92,
-        "wallSeconds": 224,
-        "missing": 0,
+        "audioSeconds": 2359.62,
+        "wallSeconds": 313,
+        "missing": 1,
         "language": "es",
         "inputAudioSeconds": 2369,
-        "creditsDeducted": 2721,
+        "creditsDeducted": 2710,
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "68a7b388ffaf03c1945ff2e2d2227bde8164bdc120049b14ac7554ee02fc2740",
-      "missing_reasons": {},
-      "retail_equivalent_usd": 0.0272
+      "missing_reasons": {
+        "NonRetryableTranscribeError: giggy: ambiguous admission; reconcile History before resubmitting": 1
+      },
+      "retail_equivalent_usd": 0.0271
     },
     {
       "config": "fleurs_fr_fr",
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 5.51,
+      "werPercent": 7.39,
       "ci95": [
-        4.54,
-        6.62
+        5.89,
+        9.11
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 5223,
-      "wallSeconds": 224,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2094.48,
-        "wallSeconds": 224,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "fr",
         "inputAudioSeconds": 2094,
@@ -290,13 +294,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "104176079934e33e9384455e958d26e4db54f38020ab551c7e05ed45b10d36a7",
@@ -308,20 +312,20 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 8.03,
+      "werPercent": 8.57,
       "ci95": [
-        6.85,
-        9.55
+        7.32,
+        10.1
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 8855,
-      "wallSeconds": 226,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2318.64,
-        "wallSeconds": 226,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "hi",
         "inputAudioSeconds": 2319,
@@ -329,13 +333,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "c60bb18a8abe9843a5235b526fb90e8b3ad98ee8ec877a14079b9aa2cdcf4608",
@@ -347,20 +351,20 @@
       "metric": "CER",
       "normalization": "cer",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 5.72,
+      "werPercent": 7.33,
       "ci95": [
-        4.85,
-        6.63
+        6.23,
+        8.46
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 9893,
-      "wallSeconds": 225,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2637.24,
-        "wallSeconds": 225,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "ja",
         "inputAudioSeconds": 2637,
@@ -368,13 +372,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "6f0504df3dfb7eef604946ffdacf0ac277b4631fdb3f76414f19f5576af147d7",
@@ -386,20 +390,20 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 10.99,
+      "werPercent": 14.38,
       "ci95": [
-        9.25,
-        12.81
+        12.04,
+        17.05
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 2921,
-      "wallSeconds": 225,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2503.8,
-        "wallSeconds": 225,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "ko",
         "inputAudioSeconds": 2504,
@@ -407,13 +411,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "54efa3d48728a7e4d5ceda2a71c2ba9b6e82ffa1bcfbe27b8fe5c18fc19e09d6",
@@ -425,20 +429,20 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 8.25,
+      "werPercent": 10.45,
       "ci95": [
-        6.6,
-        9.85
+        8.75,
+        12.31
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 3771,
-      "wallSeconds": 223,
+      "wallSeconds": 222,
       "provenance": {
         "audioSeconds": 2312.16,
-        "wallSeconds": 223,
+        "wallSeconds": 222,
         "missing": 0,
         "language": "ru",
         "inputAudioSeconds": 2312,
@@ -446,13 +450,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "981406201b6c29f99a662b74dc4b2383d7d34d219627a618344e07e0bced909b",
@@ -464,20 +468,20 @@
       "metric": "WER",
       "normalization": "word_basic",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 7.76,
+      "werPercent": 9.99,
       "ci95": [
-        6.46,
-        9.19
+        8.42,
+        11.68
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 6028,
-      "wallSeconds": 225,
+      "wallSeconds": 223,
       "provenance": {
         "audioSeconds": 2575.68,
-        "wallSeconds": 225,
+        "wallSeconds": 223,
         "missing": 0,
         "language": "vi",
         "inputAudioSeconds": 2576,
@@ -485,13 +489,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "ba7779af15a7308a29c8cfbed59395e0b4f9cb3be5489cd661d79c2d7f25aaa4",
@@ -503,20 +507,20 @@
       "metric": "WER",
       "normalization": "word_en",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 1.67,
+      "werPercent": 1.69,
       "ci95": [
-        1.51,
-        1.83
+        1.53,
+        1.84
       ],
       "missing": 0,
       "scored": 2620,
       "coveragePercent": 100.0,
       "utterances": 2620,
       "refWords": 53027,
-      "wallSeconds": 5843,
+      "wallSeconds": 2885,
       "provenance": {
         "audioSeconds": 19452.502,
-        "wallSeconds": 5843,
+        "wallSeconds": 2885,
         "missing": 0,
         "language": "en",
         "inputAudioSeconds": 19452,
@@ -524,13 +528,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "514d9451bf320867c51dc28a1fd6052db5ced1bb53b377d770ab19d744bb141a",
@@ -542,20 +546,20 @@
       "metric": "WER",
       "normalization": "word_en",
       "engine": "giggy-free-stt-v1",
-      "werPercent": 2.66,
+      "werPercent": 2.72,
       "ci95": [
-        2.45,
-        2.9
+        2.49,
+        2.97
       ],
       "missing": 0,
       "scored": 1200,
       "coveragePercent": 100.0,
       "utterances": 1200,
       "refWords": 29400,
-      "wallSeconds": 1323,
+      "wallSeconds": 1322,
       "provenance": {
         "audioSeconds": 10984.181,
-        "wallSeconds": 1323,
+        "wallSeconds": 1322,
         "missing": 0,
         "language": "en",
         "inputAudioSeconds": 10984,
@@ -563,13 +567,13 @@
         "mode": "fast",
         "advertisedModel": "Giggy Free STT v1",
         "models": [
-          "Qwen/Qwen3-ASR-1.7B"
+          "GSTT"
         ],
         "modelRevisions": [
           "7278e1e70fe206f11671096ffdd38061171dd6e5"
         ],
         "sourceCommits": [
-          "7c6daf77a2421100f5fb066495372c00129d39ff"
+          "924694251d9e0f18e5d86bbd06aa3ab5f870002d"
         ]
       },
       "reference_sha256": "dc5d62bb08b240e2767487dbc29b5a8a214399e56b230c5f87f51095482df9df",
@@ -582,20 +586,78 @@
     "mode": "async",
     "n": 40,
     "errors": 0,
-    "median_s": 4.511,
-    "mean_s": 5.148,
-    "p90_s": 6.675,
-    "min_s": 3.983,
-    "max_s": 11.604,
+    "median_s": 4.535,
+    "mean_s": 19.263,
+    "p90_s": 5.166,
+    "min_s": 2.637,
+    "max_s": 305.089,
     "config": "librispeech",
-    "measured_at": "2026-10-13T23:27:25.772523+00:00",
+    "measured_at": "2026-11-07T00:29:21.096527+00:00",
     "api_mode": "fast",
-    "poll_interval_s": 1.5
+    "poll_interval_s": 1.5,
+    "resumed_observations_excluded": 1,
+    "credits_deducted": 404,
+    "diagnostic_credits_deducted": 11,
+    "diagnostic_observations": [
+      {
+        "uid": "121-127105-0000",
+        "credits_deducted": 11,
+        "reason": "Interrupted timing; admitted job recovered without re-upload"
+      }
+    ],
+    "replacement_count": 1,
+    "transport_cohorts": {
+      "ipv4": {
+        "n": 38,
+        "median_s": 4.511,
+        "p90_s": 4.851
+      },
+      "system_address_selection": {
+        "n": 2,
+        "median_s": 304.939,
+        "p90_s": 305.059
+      }
+    },
+    "transport_note": "Two observations used system address selection and encountered approximately 305-second IPv6 connection delays. Both remain in the primary 40-call summary; the other 38 calls used IPv4 with normal TLS."
   },
   "totals": {
-    "scored_clips": 18351,
-    "missing_clips": 2752,
-    "credits_deducted": 124603,
-    "retail_equivalent_usd": 1.246
+    "scored_clips": 18348,
+    "missing_clips": 2755,
+    "credits_deducted": 124549,
+    "retail_equivalent_usd": 1.2455
+  },
+  "evaluation_period_utc": {
+    "start": "2026-11-06",
+    "end": "2026-11-07"
+  },
+  "coverage": {
+    "local_short_exclusions": 2752,
+    "service_or_admission_gaps": 3,
+    "eligible_clips": 18351,
+    "returned_clips": 18348,
+    "missing_eligible_clips": [
+      {
+        "dataset": "ami",
+        "clip": "ami_005844",
+        "status": "generation failed twice; credits refunded"
+      },
+      {
+        "dataset": "fleurs_de_de",
+        "clip": "fleurs_de_de_000082",
+        "status": "generation failed twice; credits refunded"
+      },
+      {
+        "dataset": "fleurs_es_419",
+        "clip": "fleurs_es_419_000533",
+        "status": "admission and charge uncertain; upload not repeated"
+      }
+    ]
+  },
+  "run_status": "needs_review",
+  "usage": {
+    "confirmed_net_credits_all_attempts": 124964,
+    "refunded_credits": 86,
+    "uncertain_reserved_credits": 12,
+    "note": "Includes accuracy, latency and diagnostics. The Spanish admission and charge status remain unresolved."
   }
 }

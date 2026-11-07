@@ -1,0 +1,508 @@
+{
+  "method": "Corpus WER with EnglishTextNormalizer; paired bootstrap over common returned clips only, 1000 resamples seed 0, unadjusted 95% intervals. Differences = Giggy minus comparator; positive means Giggy higher error. Providers were measured on different dates. Empty returned text is scored; absent hypotheses excluded. Reference insertion order as score_ood.py.",
+  "sources": {
+    "data_librispeech/refs.json": "514d9451bf320867c51dc28a1fd6052db5ced1bb53b377d770ab19d744bb141a",
+    "results/transcripts/librispeech-giggy-free-stt-v1.json.gz": "545e531b0574f284b65e8bddd26d29f355e0820922cd9e78b9f967dec05ddd14",
+    "results/transcripts/librispeech-openai-gpt-4o-transcribe.json.gz": "513b04127f6b2e35d85c16ab95ad8373ca40cce98a8e4544ca903c6b4f11c388",
+    "results/transcripts/librispeech-assemblyai-universal.json.gz": "f4594614fb9114303ec8fb14917752139f59165d980e0da6090941fb691eb4c1",
+    "results/transcripts/librispeech-fish-audio-asr.json.gz": "ec04e419d7fb79f0e807077f37cd0b1c02f97e8832908a7c257aee31e3bc6a0e",
+    "results/transcripts/librispeech-inworld-stt-1.json.gz": "9830acdae15e7a81801894879eab064627b3598490f698e2a75b597ac3293391",
+    "results/transcripts/librispeech-grok-stt.json.gz": "b6725e798463d76cfc6f7710fb446f80cc1f2d4559689ef3849d69289d3239ec",
+    "results/transcripts/librispeech-parakeet-tdt-0.6b-v2.json.gz": "5e3f0e45c6b508c6c0e797deaf59c2498f30f293e329427d433624f30b81910b",
+    "data_earnings22/refs.json": "6d44b84430f0883d7827289a0f35245015e34d6994194c9819a77c9ace8a32f4",
+    "results/transcripts/earnings22-giggy-free-stt-v1.json.gz": "27dbe5d6567f0857c05cb0fd14fff4131cce2f36a5fc8ca62012330a10cbfa8f",
+    "results/transcripts/earnings22-grok-stt.json.gz": "e1dc8ef36b9d6e77839f4c41325fdbe5c739c17acd04692d39d70e368abf239c",
+    "results/transcripts/earnings22-fish-audio-asr.json.gz": "69c2393f623594f67e3a4f7332885c6d27ae464e5d3a5e8514e69ee6e284bdbc",
+    "results/transcripts/earnings22-inworld-stt-1.json.gz": "19ca2b5948a95c4178c12afe52824212a8512271fc54ab403d27b6efb6896cbb",
+    "results/transcripts/earnings22-assemblyai-universal.json.gz": "6e080867e02a5a24ba8c749b368f847c6a0eeff538e10a52bf9747331bf86b80",
+    "data_spgispeech/refs.json": "dc5d62bb08b240e2767487dbc29b5a8a214399e56b230c5f87f51095482df9df",
+    "results/transcripts/spgispeech-giggy-free-stt-v1.json.gz": "6237988a0ef5b1b0c4cf97930a6932d0a01f6e1678fb78f0b67e7ce02a2c60f2",
+    "results/transcripts/spgispeech-assemblyai-universal.json.gz": "2b24c9f014ea875fbda0b38ffcfbdbf81d2e1454056f81a5c9e55e8669cdd4ec",
+    "results/transcripts/spgispeech-parakeet-v2.json.gz": "5c1e5714c7afabd72aed8fc973ca26268dafbb3a05a3222be25b8a85646b6530",
+    "results/transcripts/spgispeech-google-chirp.json.gz": "3802d25313ed397337248947f0559d51a65b5f74164770e541e9ebb7af80bc34",
+    "results/transcripts/spgispeech-azure.json.gz": "b690aa3285fe5af6700f50af9633c9c82a04e75359519ef915bfd41401d342d9",
+    "results/transcripts/spgispeech-fish-audio-asr.json.gz": "aa4751cd93297ddcfd7cafdd5830dc014d536cbd4e45b11f815d7d4df145988f",
+    "results/transcripts/spgispeech-deepgram-nova-3.json.gz": "734848064b3a167fb02ba275f9f097bceef9716e0f50b418e709a528d4fb7719",
+    "results/transcripts/spgispeech-speechmatics-enhanced.json.gz": "169163ab2470af515a3bb3923e2210873d2a31da6da773e09f23990d4748cc9c",
+    "results/transcripts/spgispeech-lemonfox-whisper.json.gz": "c28e5b85e9fb62b080d9754d44aad107e2b64f18a886b5503d184af638185483",
+    "results/transcripts/spgispeech-groq-whisper-v3-turbo.json.gz": "0b96bc4e1498544805ee1a9486910a3af2cc86d3110444978cae99844dbddb65",
+    "results/transcripts/spgispeech-elevenlabs-scribe.json.gz": "41aff07e28b46911179992f0527e738fd6da5da39dfb4aab842a91c0b6f491d5"
+  },
+  "datasets": {
+    "librispeech": {
+      "total_clips": 2620,
+      "giggy": {
+        "n": 2620,
+        "errors": 894,
+        "reference_words": 53027,
+        "wer": 1.6859335810059026,
+        "ci95": [
+          1.53,
+          1.84
+        ]
+      },
+      "pairs": [
+        {
+          "engine": "openai-gpt-4o-transcribe",
+          "n_common": 2620,
+          "giggy_common_wer": 1.6859335810059026,
+          "other_common_wer": 1.474720425443642,
+          "difference_pp": 0.21121315556226072,
+          "ci95": [
+            0.09618090869403068,
+            0.3211934445898066
+          ],
+          "other_full": {
+            "n": 2620,
+            "errors": 782,
+            "reference_words": 53027,
+            "wer": 1.474720425443642,
+            "ci95": [
+              1.33,
+              1.63
+            ]
+          }
+        },
+        {
+          "engine": "assemblyai-universal",
+          "n_common": 2620,
+          "giggy_common_wer": 1.6859335810059026,
+          "other_common_wer": 1.5501536952873065,
+          "difference_pp": 0.1357798857185962,
+          "ci95": [
+            0.03679765823875691,
+            0.23415324844869642
+          ],
+          "other_full": {
+            "n": 2620,
+            "errors": 822,
+            "reference_words": 53027,
+            "wer": 1.5501536952873065,
+            "ci95": [
+              1.4,
+              1.69
+            ]
+          }
+        },
+        {
+          "engine": "fish-audio-asr",
+          "n_common": 2620,
+          "giggy_common_wer": 1.6859335810059026,
+          "other_common_wer": 1.727421879419918,
+          "difference_pp": -0.0414882984140155,
+          "ci95": [
+            -0.231238924488021,
+            0.07541243752993983
+          ],
+          "other_full": {
+            "n": 2620,
+            "errors": 916,
+            "reference_words": 53027,
+            "wer": 1.727421879419918,
+            "ci95": [
+              1.52,
+              1.96
+            ]
+          }
+        },
+        {
+          "engine": "inworld-stt-1",
+          "n_common": 2618,
+          "giggy_common_wer": 1.6892147229990175,
+          "other_common_wer": 1.7081097422719371,
+          "difference_pp": -0.018895019272919658,
+          "ci95": [
+            -0.07191468385246748,
+            0.03599815474275778
+          ],
+          "other_full": {
+            "n": 2618,
+            "errors": 904,
+            "reference_words": 52924,
+            "wer": 1.7081097422719371,
+            "ci95": [
+              1.57,
+              1.87
+            ]
+          }
+        },
+        {
+          "engine": "grok-stt",
+          "n_common": 2620,
+          "giggy_common_wer": 1.6859335810059026,
+          "other_common_wer": 1.8198276349784073,
+          "difference_pp": -0.13389405397250456,
+          "ci95": [
+            -0.22171282883991372,
+            -0.04893432466660189
+          ],
+          "other_full": {
+            "n": 2620,
+            "errors": 965,
+            "reference_words": 53027,
+            "wer": 1.8198276349784073,
+            "ci95": [
+              1.66,
+              1.99
+            ]
+          }
+        },
+        {
+          "engine": "parakeet-tdt-0.6b-v2",
+          "n_common": 2620,
+          "giggy_common_wer": 1.6859335810059026,
+          "other_common_wer": 1.6897052444980858,
+          "difference_pp": -0.0037716634921832275,
+          "ci95": [
+            -0.11111550468148274,
+            0.10847067651628112
+          ],
+          "other_full": {
+            "n": 2620,
+            "errors": 896,
+            "reference_words": 53027,
+            "wer": 1.6897052444980858,
+            "ci95": [
+              1.54,
+              1.83
+            ]
+          }
+        }
+      ]
+    },
+    "earnings22": {
+      "total_clips": 2741,
+      "giggy": {
+        "n": 2652,
+        "errors": 4902,
+        "reference_words": 48725,
+        "wer": 10.06054386865059,
+        "ci95": [
+          9.62,
+          10.52
+        ]
+      },
+      "pairs": [
+        {
+          "engine": "grok-stt",
+          "n_common": 2652,
+          "giggy_common_wer": 10.06054386865059,
+          "other_common_wer": 9.444843509492047,
+          "difference_pp": 0.6157003591585428,
+          "ci95": [
+            0.3700925807878569,
+            0.8404169896631731
+          ],
+          "other_full": {
+            "n": 2741,
+            "errors": 4660,
+            "reference_words": 48899,
+            "wer": 9.529847236139798,
+            "ci95": [
+              9.09,
+              9.96
+            ]
+          }
+        },
+        {
+          "engine": "fish-audio-asr",
+          "n_common": 2652,
+          "giggy_common_wer": 10.06054386865059,
+          "other_common_wer": 10.177526936890713,
+          "difference_pp": -0.11698306824012314,
+          "ci95": [
+            -0.2695748176196027,
+            0.04742195903239787
+          ],
+          "other_full": {
+            "n": 2741,
+            "errors": 5023,
+            "reference_words": 48899,
+            "wer": 10.272193705392748,
+            "ci95": [
+              9.86,
+              10.71
+            ]
+          }
+        },
+        {
+          "engine": "inworld-stt-1",
+          "n_common": 2652,
+          "giggy_common_wer": 10.06054386865059,
+          "other_common_wer": 10.200102616726527,
+          "difference_pp": -0.13955874807593638,
+          "ci95": [
+            -0.27406019530286846,
+            -0.01409555624442977
+          ],
+          "other_full": {
+            "n": 2741,
+            "errors": 5031,
+            "reference_words": 48899,
+            "wer": 10.288553958158653,
+            "ci95": [
+              9.86,
+              10.74
+            ]
+          }
+        },
+        {
+          "engine": "assemblyai-universal",
+          "n_common": 2652,
+          "giggy_common_wer": 10.06054386865059,
+          "other_common_wer": 10.319138019497178,
+          "difference_pp": -0.258594150846588,
+          "ci95": [
+            -0.5642225836328951,
+            0.07533994356996453
+          ],
+          "other_full": {
+            "n": 2741,
+            "errors": 5098,
+            "reference_words": 48899,
+            "wer": 10.42557107507311,
+            "ci95": [
+              9.98,
+              10.91
+            ]
+          }
+        }
+      ],
+      "giggy_normalized": {
+        "n": 2652,
+        "errors": 4557,
+        "reference_words": 48088,
+        "wer": 9.476376642821494,
+        "ci95": [
+          9.05,
+          9.94
+        ]
+      }
+    },
+    "spgispeech": {
+      "total_clips": 1200,
+      "giggy": {
+        "n": 1200,
+        "errors": 801,
+        "reference_words": 29400,
+        "wer": 2.7244897959183674,
+        "ci95": [
+          2.49,
+          2.97
+        ]
+      },
+      "pairs": [
+        {
+          "engine": "assemblyai-universal",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 1.8673469387755102,
+          "difference_pp": 0.8571428571428571,
+          "ci95": [
+            0.656609440935248,
+            1.0403523373583716
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 549,
+            "reference_words": 29400,
+            "wer": 1.8673469387755102,
+            "ci95": [
+              1.67,
+              2.07
+            ]
+          }
+        },
+        {
+          "engine": "parakeet-v2",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 2.0374149659863945,
+          "difference_pp": 0.6870748299319728,
+          "ci95": [
+            0.4885741556608496,
+            0.8990259891593835
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 599,
+            "reference_words": 29400,
+            "wer": 2.0374149659863945,
+            "ci95": [
+              1.84,
+              2.22
+            ]
+          }
+        },
+        {
+          "engine": "google-chirp",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 2.261904761904762,
+          "difference_pp": 0.46258503401360546,
+          "ci95": [
+            0.2574782942811381,
+            0.6732326427004165
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 665,
+            "reference_words": 29400,
+            "wer": 2.261904761904762,
+            "ci95": [
+              2.07,
+              2.46
+            ]
+          }
+        },
+        {
+          "engine": "azure",
+          "n_common": 1196,
+          "giggy_common_wer": 2.7319605231704402,
+          "other_common_wer": 2.387050507120172,
+          "difference_pp": 0.34491001605026805,
+          "ci95": [
+            0.13643154448172953,
+            0.5540729138779594
+          ],
+          "other_full": {
+            "n": 1196,
+            "errors": 699,
+            "reference_words": 29283,
+            "wer": 2.387050507120172,
+            "ci95": [
+              2.19,
+              2.61
+            ]
+          }
+        },
+        {
+          "engine": "fish-audio-asr",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 2.6054421768707483,
+          "difference_pp": 0.11904761904761904,
+          "ci95": [
+            0.013977854467739389,
+            0.21220323076078085
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 766,
+            "reference_words": 29400,
+            "wer": 2.6054421768707483,
+            "ci95": [
+              2.39,
+              2.84
+            ]
+          }
+        },
+        {
+          "engine": "deepgram-nova-3",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 2.942176870748299,
+          "difference_pp": -0.21768707482993196,
+          "ci95": [
+            -0.7346520403315702,
+            0.18107922629957965
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 865,
+            "reference_words": 29400,
+            "wer": 2.942176870748299,
+            "ci95": [
+              2.52,
+              3.47
+            ]
+          }
+        },
+        {
+          "engine": "speechmatics-enhanced",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 2.996598639455782,
+          "difference_pp": -0.272108843537415,
+          "ci95": [
+            -0.4426649775515522,
+            -0.09567949527090866
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 881,
+            "reference_words": 29400,
+            "wer": 2.996598639455782,
+            "ci95": [
+              2.77,
+              3.25
+            ]
+          }
+        },
+        {
+          "engine": "lemonfox-whisper",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 3.0238095238095237,
+          "difference_pp": -0.29931972789115646,
+          "ci95": [
+            -0.5268922130033484,
+            -0.07973466987155595
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 889,
+            "reference_words": 29400,
+            "wer": 3.0238095238095237,
+            "ci95": [
+              2.76,
+              3.29
+            ]
+          }
+        },
+        {
+          "engine": "groq-whisper-v3-turbo",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 3.1156462585034013,
+          "difference_pp": -0.391156462585034,
+          "ci95": [
+            -0.6791525061472501,
+            -0.1383512261573775
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 916,
+            "reference_words": 29400,
+            "wer": 3.1156462585034013,
+            "ci95": [
+              2.83,
+              3.43
+            ]
+          }
+        },
+        {
+          "engine": "elevenlabs-scribe",
+          "n_common": 1200,
+          "giggy_common_wer": 2.7244897959183674,
+          "other_common_wer": 3.1666666666666665,
+          "difference_pp": -0.4421768707482993,
+          "ci95": [
+            -0.6116202426973104,
+            -0.2740954659452731
+          ],
+          "other_full": {
+            "n": 1200,
+            "errors": 931,
+            "reference_words": 29400,
+            "wer": 3.1666666666666665,
+            "ci95": [
+              2.9,
+              3.43
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

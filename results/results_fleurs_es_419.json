@@ -118,17 +118,17 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 5.58,
+      "werPercent": 6.64,
       "ci95": [
-        4.2,
-        6.97
+        5.04,
+        8.37
       ],
-      "missing": 0,
-      "scored": 200,
-      "coveragePercent": 100.0,
+      "missing": 1,
+      "scored": 199,
+      "coveragePercent": 99.5,
       "utterances": 200,
-      "refWords": 4857,
-      "wallSeconds": 224
+      "refWords": 4831,
+      "wallSeconds": 313
     },
     {
       "engine": "fish-audio-asr",

@@ -4,16 +4,16 @@
   "rows": [
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 5.51,
+      "werPercent": 7.39,
       "ci95": [
-        4.54,
-        6.62
+        5.89,
+        9.11
       ],
       "missing": 0,
       "cost_usd": 0.0242,
       "cost_per_audio_hour": 0.0416,
-      "latency_median_s": 4.511,
-      "latency_p90_s": 6.675,
+      "latency_median_s": 4.535,
+      "latency_p90_s": 5.166,
       "latency_mode": "async",
       "throughput_xrt_bulk": 9.4
     }
