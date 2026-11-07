@@ -73,7 +73,9 @@ def test_latency_and_accounting_caveats_retained():
     assert sum(r["provenance"]["creditsDeducted"] for r in report["datasets"]) == 124549
     assert len(report["coverage"]["missing_eligible_clips"]) == 3
     readme = (ROOT / "README.md").read_text()
-    assert "18,348 transcripts" in readme and "305-second IPv6" in readme
+    assert "| Giggy Free STT v1 (Fast)  | 1.69 | 10.06 |" in readme
+    assert "2,752 clips" in readme and "305-second IPv6" in readme
+    assert not any("giggy" in line.lower() for line in readme.splitlines() if line.startswith("#"))
     assert "Qwen" not in readme
 
 

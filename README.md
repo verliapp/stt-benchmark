@@ -1,7 +1,7 @@
 # Speech-to-text accuracy benchmark
 
 An independent word-error-rate benchmark of the major speech-to-text engines, commercial
-and open, run on the same audio with the same scorer. It covers eighteen cloud APIs plus
+and open, run on the same audio with the same scorer. It covers nineteen cloud APIs plus
 the open and on-device models, across four datasets from clean read speech to hard
 conference-call audio. Every number carries a 95% confidence interval, with cost and
 latency reported next to accuracy.
@@ -24,11 +24,11 @@ and a handful of engines inside a much larger comparison.
 
 ## What's in here
 
-- **Engines.** Eighteen commercial cloud APIs (Deepgram, AssemblyAI, OpenAI, Google,
+- **Engines.** Nineteen commercial cloud APIs (Deepgram, AssemblyAI, OpenAI, Google,
   Azure, Amazon, ElevenLabs, Speechmatics, Gladia, Soniox, Rev, Groq, xAI Grok, Fish,
-  Cartesia, Inworld, Lemonfox, and Gemini), plus the open and on-device engines (the
+  Cartesia, Inworld, Lemonfox, Gemini, and Giggy), plus the open and on-device engines (the
   Whisper family through WhisperKit, NVIDIA Parakeet v2 and v3, and Apple SpeechAnalyzer).
-  A nineteenth adapter, Resemble, exists in the code but was dropped from the results
+  A twentieth adapter, Resemble, exists in the code but was dropped from the results
   because running the full sets on it cost far more per hour than any other engine.
 - **Datasets.** LibriSpeech test-clean (clean read speech), Earnings-22 and SPGISpeech
   (two kinds of financial earnings-call audio), and AMI (meeting audio). Every engine gets
@@ -48,108 +48,14 @@ Accuracy depends on the set, and no single engine wins all of them.
 
 A slice of the cloud results, ordered by clean-speech error, showing how the ranking
 scrambles on hard audio. Numbers are WER percent (lower is better); the full tables for all
-eighteen cloud engines, plus cost and latency, are in the
+nineteen cloud engines, plus cost and latency, are in the
 [accuracy writeup](https://verli.app/blog/speech-to-text-accuracy-benchmark).
-
-### Giggy evaluation (November 6–7, 2026 UTC)
-
-Giggy Free STT v1 is evaluated using the Fast recording API. The results cover
-18,348 transcripts across 14 datasets. Three eligible clips did not produce an
-available transcript; clips below the API’s 0.5-second minimum are excluded from
-accuracy scores and reported separately.
-
-Giggy describes the service as its own standalone model. The API returns `GSTT`
-in its model field; returned metadata does not independently verify architecture.
-The API has no selectable STT model parameter.
-
-| Dataset | Metric | Error % | 95% CI | Returned / total | Coverage |
-|---------|--------|--------:|:------:|-----------------:|---------:|
-| LibriSpeech | WER | 1.69 | 1.53–1.84 | 2,620 / 2,620 | 100.0% |
-| Earnings-22 | WER | 10.06 | 9.62–10.52 | 2,652 / 2,741 | 96.8% |
-| SPGISpeech | WER | 2.72 | 2.49–2.97 | 1,200 / 1,200 | 100.0% |
-| AMI | WER | 10.37 | 10.07–10.68 | 9,878 / 12,542 | 78.8% |
-| FLEURS Arabic | WER | 18.42 | 15.88–21.05 | 200 / 200 | 100.0% |
-| FLEURS Mandarin | CER | 6.40 | 5.01–7.73 | 200 / 200 | 100.0% |
-| FLEURS German | WER | 8.00 | 6.16–9.92 | 199 / 200 | 99.5% |
-| FLEURS Spanish | WER | 6.64 | 5.04–8.37 | 199 / 200 | 99.5% |
-| FLEURS French | WER | 7.39 | 5.89–9.11 | 200 / 200 | 100.0% |
-| FLEURS Hindi | WER | 8.57 | 7.32–10.10 | 200 / 200 | 100.0% |
-| FLEURS Japanese | CER | 7.33 | 6.23–8.46 | 200 / 200 | 100.0% |
-| FLEURS Korean | WER | 14.38 | 12.04–17.05 | 200 / 200 | 100.0% |
-| FLEURS Russian | WER | 10.45 | 8.75–12.31 | 200 / 200 | 100.0% |
-| FLEURS Vietnamese | WER | 9.99 | 8.42–11.68 | 200 / 200 | 100.0% |
-
-WER is word error rate; Mandarin and Japanese use character error rate (CER).
-Intervals use 1,000 utterance-bootstrap resamples, seed 0. FLEURS uses prepared
-200-clip samples. Scores describe these samples, not a general language ranking.
-Other providers were measured on different dates; statistical comparisons require
-paired tests on common returned clips. The [paired comparison results](results/giggy_comparisons.json)
-include the disfluency-normalized Earnings-22 score (9.48%) and unadjusted
-95% intervals. With prepared reference files available, reproduce them offline
-with `python src/compare_giggy.py`; use `--references-root` for another dataset
-directory.
-
-There are 2,752 short-input exclusions and three additional gaps: one AMI clip,
-one German clip, and one Spanish clip. The AMI and German generations failed;
-the Spanish admission and charge remain unresolved. Missing transcripts are
-coverage gaps; returned empty transcripts count as deletions.
-
-Isolated end-to-end latency over 40 clips is **4.535 seconds median** and
-**5.166 seconds p90**. Two approximately 305-second IPv6 connection delays remain
-included, giving a mean of 19.263 seconds and a maximum of 305.089 seconds. The
-38 IPv4 observations are reported separately in the JSON. Timing includes upload,
-polling and download, not just recognition.
-
-The [evaluation JSON](results/giggy_evaluation.json) includes coverage, returned
-metadata, credit accounting and timing details. [Dated archived artifacts](results/archive/giggy/2026-10-13/)
-retain the earlier published records.
-
-The runner uses provider `giggy` and output engine `giggy-free-stt-v1`. The paid
-Fast API accepts PCM16 mono 16 kHz WAV, returns an admission UUID, and requires
-polling and downloading the final transcript. API credentials are never sent to
-the signed artifact host. Resampling leaves the original audio unchanged; short
-clips are not padded.
-
-```bash
-# GIGGY_API_KEY belongs only in the gitignored .env.providers.
-./.venv/bin/python src/run_cloud_engines.py librispeech giggy
-./.venv/bin/python src/score_ood.py librispeech --engine giggy-free-stt-v1
-./.venv/bin/python src/report.py librispeech --engine giggy-free-stt-v1
-./.venv/bin/python src/measure_latency.py --n 40 giggy
-./.venv/bin/python src/report_giggy.py
-```
-
-The `--engine` scoring/report options update only that provider and preserve the
-other engines' existing results. Admission UUIDs are saved under each provider's
-gitignored `.jobs/` directory so a retry resumes an admitted recording. Ambiguous
-uploads are not automatically repeated. Deterministic input rejections are not
-retried. Final transcripts retain the standard scorer's treatment of empty text
-as deletions, and unavailable transcripts as coverage gaps.
-
-The production STT upload response advertises 60 uploads per minute even in Fast
-mode. The adapter paces admissions at one per 1.1 seconds and limits status reads
-to 480 per minute, below the documented 600-read limit. A full run therefore takes
-several hours. `evaluate_giggy.py` runs, scores, and reports all fourteen prepared
-datasets in sequence and writes resumable progress under `results/reports/`.
-
-`results/giggy_evaluation.json` collects the English sets, the ten existing
-200-clip FLEURS language samples, coverage, 95% confidence intervals, returned
-model revisions, and isolated STT latency. Pricing uses the actual credits
-deducted per clip, including per-request rounding, converted at the published
-Pro/Studio/Scale denomination ($10 per million credits). The key was funded with
-evaluation credits; the dollar figure is a retail-equivalent estimate, not an
-invoice. TTS timing lives separately in Verli's `benchmarks/tts-latency/`.
-With the benchmark requirements installed, run the offline contract and resume
-tests with `./.venv/bin/python -m pip install pytest` followed by
-`./.venv/bin/python -m pytest -q tests/test_giggy.py`.
-
-References: [Speech API](https://giggy.ai/docs/speech-api),
-[OpenAPI](https://giggy.ai/v1/openapi.json), [pricing](https://giggy.ai/pricing).
 
 | Cloud engine | Clean WER (LibriSpeech) | Hard WER (Earnings-22) |
 |--------------|-----------------------:|-----------------------:|
 | OpenAI gpt-4o-transcribe  | 1.47 | 18.55 |
 | AssemblyAI Universal-3.5  | 1.55 | 10.43 |
+| Giggy Free STT v1 (Fast)  | 1.69 | 10.06 |
 | Inworld STT-1             | 1.71 | 10.29 |
 | Fish Audio                | 1.73 | 10.27 |
 | xAI Grok                  | 1.82 | 9.53  |
@@ -169,7 +75,8 @@ All Python lives in `src/` and is run from the repo root (`./.venv/bin/python sr
 - `results/`: the committed outputs. Per-engine transcripts under `transcripts/`, the WER,
   cost, and latency summaries (`results_*.json`, `report_*.json`, `latency.json`), and the
   on-device run summaries (`apple.json`, `parakeet.json`, `whisperkit.json`). The large
-  per-clip `reports/` tree is regenerable and gitignored.
+  per-clip `reports/` tree is regenerable and gitignored. Provider evaluation reports
+  include coverage and timing details; dated records remain under `results/archive/`.
 - `SpeechAnalyzerCLI/`: the macOS 26 Swift harness for Apple SpeechAnalyzer.
 - `assets/`: the on-device charts.
 - `pricing.json`, `requirements*.txt`, `setup.sh`, and `.env.providers.example` sit at the
@@ -476,6 +383,13 @@ Whisper via `mlx-whisper`. `make_charts.py` regenerates the charts above (needs 
   per-utterance WERs. Missing output is handled as a coverage gap, reported per engine. Returned
   empty transcripts count as deletions. Each number carries a 95% bootstrap
   CI over utterances (1000 resamples, fixed seed).
+- **Coverage:** scores use returned clips, and paired comparisons use only clips returned
+  by both engines. Giggy's 0.5-second minimum excludes 2,752 clips. Three further
+  clips have no transcript (one each in AMI, German and Spanish); the Spanish
+  admission and charge remain unresolved. Coverage is 100% on LibriSpeech and
+  SPGISpeech, 96.8% on Earnings-22, 78.8% on AMI, and 99.5% on the German and
+  Spanish FLEURS samples. Full counts and missing reasons are in the
+  [evaluation data](results/giggy_evaluation.json).
 - **Engine (on-device):** WhisperKit CoreML for Whisper, same on-device path as the
   original. Parakeet via `parakeet-mlx`. Apple SpeechAnalyzer via `SpeechAnalyzerCLI/`
   (macOS 26 Speech framework, fully on-device).
@@ -496,7 +410,10 @@ Whisper via `mlx-whisper`. `make_charts.py` regenerates the charts above (needs 
 - **Speed:** Apple and Parakeet run single-stream at roughly 0.02 real-time factor
   (about 50x faster than audio) on the M4 Pro. Cloud latency is measured separately by
   `measure_latency.py`, one call at a time, since the bulk runs use many workers and that
-  distorts per-call timing. We do not rank on speed across machines.
+  distorts per-call timing. We do not rank on speed across machines. Giggy's
+  40-call summary retains two approximately 305-second IPv6 connection delays:
+  median 4.535s, p90 5.166s, mean 19.263s. The separate IPv4 timings and all
+  provider latency summaries are in `results/latency.json`.
 
 ## Requirements
 
