@@ -34,18 +34,18 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 1.67,
+      "werPercent": 1.69,
       "ci95": [
-        1.51,
-        1.83
+        1.53,
+        1.84
       ],
       "missing": 0,
       "cost_usd": 0.2292,
       "cost_per_audio_hour": 0.0424,
-      "latency_median_s": 4.511,
-      "latency_p90_s": 6.675,
+      "latency_median_s": 4.535,
+      "latency_p90_s": 5.166,
       "latency_mode": "async",
-      "throughput_xrt_bulk": 3.3
+      "throughput_xrt_bulk": 6.7
     },
     {
       "engine": "fish-audio-asr",

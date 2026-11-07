@@ -76,17 +76,17 @@
     },
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 4.89,
+      "werPercent": 6.4,
       "ci95": [
-        3.77,
-        6.02
+        5.01,
+        7.73
       ],
       "missing": 0,
       "scored": 200,
       "coveragePercent": 100.0,
       "utterances": 200,
       "refWords": 7438,
-      "wallSeconds": 225
+      "wallSeconds": 223
     },
     {
       "engine": "lemonfox-whisper",

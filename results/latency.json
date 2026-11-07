@@ -220,14 +220,38 @@
     "mode": "async",
     "n": 40,
     "errors": 0,
-    "median_s": 4.511,
-    "mean_s": 5.148,
-    "p90_s": 6.675,
-    "min_s": 3.983,
-    "max_s": 11.604,
+    "median_s": 4.535,
+    "mean_s": 19.263,
+    "p90_s": 5.166,
+    "min_s": 2.637,
+    "max_s": 305.089,
     "config": "librispeech",
-    "measured_at": "2026-10-13T23:27:25.772523+00:00",
+    "measured_at": "2026-11-07T00:29:21.096527+00:00",
     "api_mode": "fast",
-    "poll_interval_s": 1.5
+    "poll_interval_s": 1.5,
+    "resumed_observations_excluded": 1,
+    "credits_deducted": 404,
+    "diagnostic_credits_deducted": 11,
+    "diagnostic_observations": [
+      {
+        "uid": "121-127105-0000",
+        "credits_deducted": 11,
+        "reason": "Interrupted timing; admitted job recovered without re-upload"
+      }
+    ],
+    "replacement_count": 1,
+    "transport_cohorts": {
+      "ipv4": {
+        "n": 38,
+        "median_s": 4.511,
+        "p90_s": 4.851
+      },
+      "system_address_selection": {
+        "n": 2,
+        "median_s": 304.939,
+        "p90_s": 305.059
+      }
+    },
+    "transport_note": "Two observations used system address selection and encountered approximately 305-second IPv6 connection delays. Both remain in the primary 40-call summary; the other 38 calls used IPv4 with normal TLS."
   }
 }

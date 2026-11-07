@@ -51,27 +51,64 @@ scrambles on hard audio. Numbers are WER percent (lower is better); the full tab
 eighteen cloud engines, plus cost and latency, are in the
 [accuracy writeup](https://verli.app/blog/speech-to-text-accuracy-benchmark).
 
-### Giggy evaluation (2026-10-13)
+### Giggy evaluation (November 6–7, 2026 UTC)
 
-Giggy is an additional provider in the runner (`giggy`, output engine
-`giggy-free-stt-v1`). It uses the paid **Fast** recording API, as requested by
-the vendor for this evaluation. The API accepts PCM16 mono 16 kHz WAV, returns
-an admission UUID, and requires polling and downloading the durable final
-transcript. API credentials are never sent to the signed artifact host. The
-adapter locally resamples other input sample rates, leaves the dataset files
-unchanged, and reports recordings shorter than the provider's 0.5-second minimum
-as coverage gaps without padding them.
+Giggy Free STT v1 is evaluated using the Fast recording API. The results cover
+18,348 transcripts across 14 datasets. Three eligible clips did not produce an
+available transcript; clips below the API’s 0.5-second minimum are excluded from
+accuracy scores and reported separately.
 
-The vendor identifies the model as **Giggy Free STT v1**. During the October
-13–14, 2026 evaluation, downloaded transcript JSON reported the model field as
-`Qwen/Qwen3-ASR-1.7B`, along with revision and worker source fields. On November
-4, Giggy attributed that label to a naming flag left over from benchmarking
-other models on shared infrastructure and described Giggy STT as a standalone
-model. We have not independently verified the underlying model architecture or
-that explanation. The saved fields record what the API returned; they do not
-independently establish model identity. Raw metadata and measured results are
-preserved unchanged. Cite these results as **Giggy Free STT v1** via the Fast
-recording API; the API does not offer a selectable STT model parameter.
+Giggy describes the service as its own standalone model. The API returns `GSTT`
+in its model field; returned metadata does not independently verify architecture.
+The API has no selectable STT model parameter.
+
+| Dataset | Metric | Error % | 95% CI | Returned / total | Coverage |
+|---------|--------|--------:|:------:|-----------------:|---------:|
+| LibriSpeech | WER | 1.69 | 1.53–1.84 | 2,620 / 2,620 | 100.0% |
+| Earnings-22 | WER | 10.06 | 9.62–10.52 | 2,652 / 2,741 | 96.8% |
+| SPGISpeech | WER | 2.72 | 2.49–2.97 | 1,200 / 1,200 | 100.0% |
+| AMI | WER | 10.37 | 10.07–10.68 | 9,878 / 12,542 | 78.8% |
+| FLEURS Arabic | WER | 18.42 | 15.88–21.05 | 200 / 200 | 100.0% |
+| FLEURS Mandarin | CER | 6.40 | 5.01–7.73 | 200 / 200 | 100.0% |
+| FLEURS German | WER | 8.00 | 6.16–9.92 | 199 / 200 | 99.5% |
+| FLEURS Spanish | WER | 6.64 | 5.04–8.37 | 199 / 200 | 99.5% |
+| FLEURS French | WER | 7.39 | 5.89–9.11 | 200 / 200 | 100.0% |
+| FLEURS Hindi | WER | 8.57 | 7.32–10.10 | 200 / 200 | 100.0% |
+| FLEURS Japanese | CER | 7.33 | 6.23–8.46 | 200 / 200 | 100.0% |
+| FLEURS Korean | WER | 14.38 | 12.04–17.05 | 200 / 200 | 100.0% |
+| FLEURS Russian | WER | 10.45 | 8.75–12.31 | 200 / 200 | 100.0% |
+| FLEURS Vietnamese | WER | 9.99 | 8.42–11.68 | 200 / 200 | 100.0% |
+
+WER is word error rate; Mandarin and Japanese use character error rate (CER).
+Intervals use 1,000 utterance-bootstrap resamples, seed 0. FLEURS uses prepared
+200-clip samples. Scores describe these samples, not a general language ranking.
+Other providers were measured on different dates; statistical comparisons require
+paired tests on common returned clips. The [paired comparison results](results/giggy_comparisons.json)
+include the disfluency-normalized Earnings-22 score (9.48%) and unadjusted
+95% intervals. With prepared reference files available, reproduce them offline
+with `python src/compare_giggy.py`; use `--references-root` for another dataset
+directory.
+
+There are 2,752 short-input exclusions and three additional gaps: one AMI clip,
+one German clip, and one Spanish clip. The AMI and German generations failed;
+the Spanish admission and charge remain unresolved. Missing transcripts are
+coverage gaps; returned empty transcripts count as deletions.
+
+Isolated end-to-end latency over 40 clips is **4.535 seconds median** and
+**5.166 seconds p90**. Two approximately 305-second IPv6 connection delays remain
+included, giving a mean of 19.263 seconds and a maximum of 305.089 seconds. The
+38 IPv4 observations are reported separately in the JSON. Timing includes upload,
+polling and download, not just recognition.
+
+The [evaluation JSON](results/giggy_evaluation.json) includes coverage, returned
+metadata, credit accounting and timing details. [Dated archived artifacts](results/archive/giggy/2026-10-13/)
+retain the earlier published records.
+
+The runner uses provider `giggy` and output engine `giggy-free-stt-v1`. The paid
+Fast API accepts PCM16 mono 16 kHz WAV, returns an admission UUID, and requires
+polling and downloading the final transcript. API credentials are never sent to
+the signed artifact host. Resampling leaves the original audio unchanged; short
+clips are not padded.
 
 ```bash
 # GIGGY_API_KEY belongs only in the gitignored .env.providers.
@@ -436,8 +473,8 @@ Whisper via `mlx-whisper`. `make_charts.py` regenerates the charts above (needs 
   are the full Earnings-22 and AMI test splits from the Open ASR Leaderboard bundle
   `hf-audio/esb-datasets-test-only-sorted`, plus a 1200-clip sample of SPGISpeech.
 - **Metric:** corpus WER (total edits / total reference words), not the mean of
-  per-utterance WERs. Empty or missing output is handled as a coverage gap, reported per
-  engine, rather than silently counted as accuracy. Each number carries a 95% bootstrap
+  per-utterance WERs. Missing output is handled as a coverage gap, reported per engine. Returned
+  empty transcripts count as deletions. Each number carries a 95% bootstrap
   CI over utterances (1000 resamples, fixed seed).
 - **Engine (on-device):** WhisperKit CoreML for Whisper, same on-device path as the
   original. Parakeet via `parakeet-mlx`. Apple SpeechAnalyzer via `SpeechAnalyzerCLI/`

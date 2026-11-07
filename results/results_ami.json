@@ -4,17 +4,17 @@
   "results": [
     {
       "engine": "giggy-free-stt-v1",
-      "werPercent": 10.41,
+      "werPercent": 10.37,
       "ci95": [
-        10.08,
-        10.74
+        10.07,
+        10.68
       ],
-      "missing": 2663,
-      "scored": 9879,
+      "missing": 2664,
+      "scored": 9878,
       "coveragePercent": 78.8,
       "utterances": 12542,
       "refWords": 87121,
-      "wallSeconds": 11370
+      "wallSeconds": 10893
     },
     {
       "engine": "parakeet-v3",
