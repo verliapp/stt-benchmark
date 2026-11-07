@@ -58,9 +58,7 @@ Giggy Free STT v1 is evaluated using the Fast recording API. The results cover
 available transcript; clips below the API’s 0.5-second minimum are excluded from
 accuracy scores and reported separately.
 
-Giggy describes the service as its own standalone model. The API returns `GSTT`
-in its model field; returned metadata does not independently verify architecture.
-The API has no selectable STT model parameter.
+Giggy describes the service as its own standalone model.
 
 | Dataset | Metric | Error % | 95% CI | Returned / total | Coverage |
 |---------|--------|--------:|:------:|-----------------:|---------:|
